@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+*.tgz
+
+# Test / coverage
+coverage/
+.vitest/
+
+# Temporary probe scripts used while reverse-engineering the upstream data shape
+verify.ts
+inspect.ts
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary build output from the version test
+.tmp-version-test/

@@ -1,0 +1,103 @@
+import { describe, expect, it } from 'vitest'
+import { buildDesignMd } from '../src/core/designMd.js'
+import { truncateMarkdown } from '../src/core/truncate.js'
+import { styleDetailSchema, type StyleDetail } from '../src/types.js'
+
+const detail: StyleDetail = styleDetailSchema.parse({
+  summary: {
+    id: 'a73148b9-449b-42cd-9f38-86ef694f500e',
+    siteName: 'Apple',
+    url: 'https://www.apple.com/iphone-duo',
+    colorScheme: 'light',
+    fonts: ['SF Pro Text'],
+    colors: [{ name: 'Gallery White', hex: '#ffffff' }],
+    stylePageUrl: 'https://styles.refero.design/style/a73148b9-449b-42cd-9f38-86ef694f500e',
+  },
+  designSystem: {
+    theme: 'light',
+    northStar: 'foldable device in a white gallery',
+    description: 'A white gallery.',
+    colors: [{ hex: '#ffffff', name: 'Gallery White', role: 'Page canvas', group: 'neutral' }],
+    dos: ['Centre the product'],
+    donts: ['Add drop shadows'],
+    spacing: { radius: { cards: '28px' }, elementGap: '20px' },
+    similar: [{ business: 'Google Pixel', why: 'isolated renders' }],
+    customSections: [{ title: 'Agent Guide', content: '$1e' }],
+  },
+  cachedAt: '2026-01-01T00:00:00.000Z',
+})
+
+describe('buildDesignMd', () => {
+  it('honours the sections argument', () => {
+    // A `sections` argument that is accepted but ignored is worse than none:
+    // the caller believes it has narrowed the response and has not.
+    const markdown = buildDesignMd(detail, { sections: ['colors'] }, 10_000)
+    expect(markdown).toContain('## Colours')
+    expect(markdown).not.toContain("### Don't")
+    expect(markdown).not.toContain('## Components')
+  })
+
+  it('puts the overview first regardless of the requested order', () => {
+    const markdown = buildDesignMd(detail, { sections: ['colors', 'overview'] }, 10_000)
+    expect(markdown.startsWith('# Apple')).toBe(true)
+  })
+
+  it('drops sections with no data instead of rendering empty headings', () => {
+    const markdown = buildDesignMd(detail, { sections: ['components'] }, 10_000)
+    expect(markdown).not.toContain('## Components')
+  })
+
+  it('skips a lazy flight reference rather than printing it as prose', () => {
+    const markdown = buildDesignMd(detail, { sections: ['custom'] }, 10_000)
+    expect(markdown).not.toContain('$1e')
+  })
+
+  it('renders a per-element radius map', () => {
+    const markdown = buildDesignMd(detail, { sections: ['spacing'] }, 10_000)
+    expect(markdown).toContain('cards `28px`')
+  })
+
+  it('renders structured similar entries', () => {
+    const markdown = buildDesignMd(detail, { sections: ['similar'] }, 10_000)
+    expect(markdown).toContain('**Google Pixel**')
+  })
+
+  it('escapes pipes so markdown tables stay intact', () => {
+    const withPipe: StyleDetail = {
+      ...detail,
+      designSystem: {
+        ...detail.designSystem,
+        colors: [{ hex: '#fff', name: 'A|B', role: 'r' }],
+      },
+    }
+    // Escaped, not replaced: dropping the character would silently alter data.
+    expect(buildDesignMd(withPipe, { sections: ['colors'] }, 10_000)).toContain('A\\|B')
+  })
+
+  it('says so when the document had to be cut', () => {
+    const markdown = buildDesignMd(detail, {}, 120)
+    expect(markdown).toContain('truncated')
+  })
+})
+
+describe('truncateMarkdown', () => {
+  it('leaves a short document untouched', () => {
+    const result = truncateMarkdown('# Title', 100)
+    expect(result.truncated).toBe(false)
+    expect(result.text).toBe('# Title')
+  })
+
+  it('never returns an unterminated code fence', () => {
+    // Slicing with `slice(0, n)` used to cut fences in half.
+    const document = ['text', '```html', '<div class="card">content</div>', '```', 'more'].join('\n')
+    const result = truncateMarkdown(document, 20)
+    const fences = result.text.split('\n').filter(line => line.trim().startsWith('```'))
+    expect(fences.length % 2).toBe(0)
+  })
+
+  it('announces the truncation', () => {
+    const result = truncateMarkdown('line\n'.repeat(200), 100)
+    expect(result.truncated).toBe(true)
+    expect(result.text).toContain('truncated')
+  })
+})
