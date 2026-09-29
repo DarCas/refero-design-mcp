@@ -79,6 +79,14 @@ through `log()` in `src/http.ts`, which writes to stderr.
 
 **Never use `console.*`.** Enforced by lint. Use `log()`.
 
+**Never publish.** The user owns the release. Never run `npm publish`, never
+create or push a Git tag, never run `npm version` — that last one tags by
+default. This is not a permission thing, it is a hard boundary: the tag `v*` is
+what triggers `.github/workflows/publish.yml`, so a stray tag publishes to npm.
+
+Do the work, bump `version` in `package.json` by hand, run `npm run verify`,
+commit, and stop. Say plainly that it is ready to release and let the user tag it.
+
 ## Verify before declaring done
 
 ```bash
@@ -176,10 +184,10 @@ Rules the layout encodes:
 ## Known gaps
 
 - No tool for collections (`sitemaps/collections.xml` has 52; unused).
-- Not published to npm yet. The package is `@darcas/refero-design-mcp`; the
-  installed binary is `refero-design-mcp` (unscoped on purpose). Publishing
-  requires the `@darcas` scope to exist and be owned.
-- No CI workflow. The user has deferred it deliberately.
+- `package-lock.json` is stale: it still records the package as unscoped
+  `refero-design-mcp` at `0.1.0`. It does not block a release — `npm ci` only
+  validates dependencies, not the root name and version — but regenerate it
+  when the dependency set changes anyway.
 
 ## Packaging
 
@@ -188,6 +196,32 @@ the wire and the `bin` entry are both unscoped `refero-design-mcp` — the model
 and the user should not type the scope. `src/server/index.ts` locates its own
 manifest by suffix match, so a future scope change cannot break version
 reporting.
+
+Every `bin` target must be executable. `tsc` emits files at 644 whatever the
+mode of the source, so a shebang is not enough: npm symlinks
+`node_modules/.bin/<name>` to the target without checking the bit, and the spawn
+fails with `Permission denied`. The MCP client then drops the server silently —
+no tool list, no actionable error. `npm start` passes `node dist/cli.js`
+explicitly and so never caught it.
+
+`build` ends with `node scripts/postbuild.mjs`, which reads `bin` from the
+manifest and chmods each target, so a new entry is picked up automatically. Do
+not replace it with a bare `chmod +x` in the script string: that works on the
+Linux CI runner and on a Linux dev box, but `chmod` is not a `cmd.exe` builtin,
+so the build would fail outright for anyone cloning on Windows. `chmodSync` is
+a no-op there, which is correct — npm writes `.cmd` shims on Windows, not
+symlinks, so the bit is not needed.
+
+## Releasing
+
+The user releases. There is no agent-facing publish step, and there should not
+be one — see **Never publish** above.
+
+The mechanism, for context only: a `v*` tag pushed to `origin` runs
+`.github/workflows/publish.yml`, which does `npm ci` then `npm run deploy`
+(`verify`, then `npm publish --access public --provenance`). A release therefore
+needs a bumped `version` in `package.json`, because npm will not republish a
+version that already exists.
 
 ## Adding a tool
 
