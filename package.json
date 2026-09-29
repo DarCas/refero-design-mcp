@@ -46,7 +46,7 @@
   "name": "@darcas/refero-design-mcp",
   "repository": {
     "type": "git",
-    "url": "https://github.com/DarCas/refero-design-mcp"
+    "url": "git+https://github.com/DarCas/refero-design-mcp.git"
   },
   "scripts": {
     "build": "npm run clean && tsc -p tsconfig.build.json",
@@ -61,5 +61,5 @@
     "verify": "npm run typecheck && npm run lint && npm run test && npm run build"
   },
   "type": "module",
-  "version": "1.0.0"
+  "version": "1.0.1"
 }
