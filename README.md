@@ -1,11 +1,13 @@
 # refero-design-mcp
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge)](https://www.typescriptlang.org)
 ![Node.js](https://img.shields.io/badge/node.js-%3E%3D20-5FA04E?logo=nodedotjs&logoColor=white&style=for-the-badge)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge)](https://www.typescriptlang.org)
+[![Tests](https://img.shields.io/badge/tests-67%20passing-brightgreen?style=for-the-badge)](#testing)
+
 [![Version](https://img.shields.io/github/v/tag/DarCas/refero-design-mcp?label=version&style=for-the-badge)](https://github.com/DarCas/refero-design-mcp/releases)
 ![npm](https://img.shields.io/npm/v/@darcas/refero-design-mcp?style=for-the-badge)
+![NPM Downloads](https://img.shields.io/npm/dy/%40darcas%2Frefero-design-mcp?style=for-the-badge)
 
-[![Tests](https://img.shields.io/badge/tests-67%20passing-brightgreen?style=for-the-badge)](#testing)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
