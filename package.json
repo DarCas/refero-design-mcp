@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.1",
-    "zod": "^3.23.8"
+    "zod": "^4.6.5"
   },
   "description": "MCP server for design research on styles.refero.design: search curated website styles, then extract colours, type scale, spacing and dos/donts as design.md",
   "devDependencies": {

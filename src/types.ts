@@ -253,7 +253,13 @@ export const styleDetailSchema = z.object({
     /** lastmod advertised by the sitemap at the time of the fetch. */
     lastmod: z.string()
         .optional(),
-    raw: rawTokensSchema.default({}),
+    /**
+     * `prefault`, not `default`: in zod 4 `default` substitutes the value
+     * verbatim, which would leave this field as a bare `{}` with none of
+     * `rawTokensSchema`'s own defaults filled in. `prefault` applies the value to
+     * the *input* and then parses it, which is what zod 3's `default` did.
+     */
+    raw: rawTokensSchema.prefault({}),
     summary: styleSummarySchema,
 })
 export type StyleDetail = z.infer<typeof styleDetailSchema>

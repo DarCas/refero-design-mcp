@@ -1,5 +1,25 @@
 # Domain — the extracted data
 
+## Schemas: zod 4
+
+Schemas are declared in `src/types.ts` on zod 4. Two behaviours differ from zod 3
+and are invisible in the schema source:
+
+- **`default` substitutes verbatim; `prefault` parses first.** In zod 3,
+  `rawTokensSchema.default({})` fed `{}` *into* the schema, so the schema's own
+  field defaults were filled in. In zod 4 the same call stores `{}` as the
+  output, leaving a bare empty object — and it usually does not even fail to
+  compile. Use `prefault` whenever the intent is "substitute this, then
+  validate", which is what `styleDetailSchema.raw` needs.
+- **`additionalProperties: false` is no longer emitted** for `z.object()`, so an
+  unrecognised tool argument is ignored instead of rejected. Required arguments
+  are still enforced, which is the case that matters: a misspelled required
+  argument is caught by validation, not silently defaulted.
+
+`z.infer` still works and is what the type aliases use. `z.output` is the v4
+recommendation; switching is cosmetic and was not done to keep the diff to the
+one behavioural change.
+
 ## Where the data comes from
 
 `styles.refero.design` publishes style pages as Next.js App Router documents.
