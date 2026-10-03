@@ -27,9 +27,9 @@ afterAll(() => {
 })
 
 /**
- * Guards a bug that failed silently: resolving `package.json` with a fixed
- * relative depth reported version 0.0.0 from the compiled output while tests,
- * which import from `src/`, still passed.
+ * Guards a bug that failed silently: resolving `package.json` at a fixed
+ * relative depth reported 0.0.0 from the compiled output, while tests importing
+ * from `src/` still passed.
  */
 describe('version resolution', () => {
   it('reads the real version from package.json when running from src', () => {
@@ -38,9 +38,8 @@ describe('version resolution', () => {
   })
 
   it('reports the same version from freshly compiled output', () => {
-    // Loads the compiled module directly rather than the server assembly, so
-    // the assertion covers version resolution alone and cannot be satisfied by
-    // the assembly re-exporting the constant.
+    // Loads the compiled module directly, so the assertion covers version
+    // resolution alone and cannot pass via the assembly re-exporting it.
     const compiled = join(tmpOut, 'version.js')
     expect(existsSync(compiled)).toBe(true)
 
@@ -96,18 +95,16 @@ describe('version resolution', () => {
 /**
  * Regression guard for a circular import.
  *
- * `config.ts` needs VERSION for the User-Agent, and the store needs config, so
- * defining VERSION inside the server module closed a cycle
- * (server/index → store → config → server/index).
+ * `config.ts` needs VERSION for the User-Agent and the store needs config, so
+ * holding VERSION in the server module closed the cycle
+ * server/index → store → config → server/index.
  *
- * The failure depends on load order, which is why it hid. Starting the CLI
- * works, because cli.ts reaches config through the store first. Importing
- * `server/index.js` as the entry — which is what a bundler, a test, or any
- * future consumer does — evaluates config.js while it is still initialising and
- * reads VERSION out of its temporal dead zone, so the module throws before it
- * can answer a single request.
- *
- * Both entry points are therefore exercised below.
+ * The failure depends on load order, which is why it hid: the CLI reaches
+ * config through the store first, so `npm start` worked. Loading
+ * `server/index.js` as the entry — what a bundler, a test, or any future
+ * consumer does — evaluates `config.js` while it is still initialising and
+ * reads VERSION out of its temporal dead zone, throwing before the module can
+ * answer a request. Both entry orders are exercised below.
  */
 describe('module load order', () => {
   const compiledEntry = join(root, '.tmp-version-test', 'server', 'index.js')
@@ -115,10 +112,8 @@ describe('module load order', () => {
   it('loads server/index.js as the first module', () => {
     expect(existsSync(compiledEntry)).toBe(true)
 
-    // Reaching the assertion at all is the point: with the cycle present this
-    // import throws a temporal-dead-zone ReferenceError and the process exits
-    // non-zero. VERSION is not re-exported here, so the check is that the
-    // module graph finished initialising and produced a usable server.
+    // Reaching the assertion is the point: with the cycle present this import
+    // throws a TDZ ReferenceError and the child exits non-zero.
     const output = execFileSync(
       process.execPath,
       ['-e', `import(${JSON.stringify(compiledEntry)}).then(m => console.log(typeof m.createServer))`],
@@ -129,7 +124,7 @@ describe('module load order', () => {
   }, 30_000)
 
   it('loads config.js as the first module', () => {
-    // The other side of the same cycle: config must not reach back into the
+    // The other side of the cycle: config must not reach back into the
     // server module, or a consumer that reaches config first breaks instead.
     const configEntry = join(root, '.tmp-version-test', 'config.js')
     const output = execFileSync(

@@ -7,11 +7,12 @@
 /**
  * Minimal HTTP client built on global fetch.
  *
- * Responsibilities kept here so no other module has to think about them:
- * - never writes to stdout (MCP stdio transport owns it)
- * - honours conditional requests so cached pages cost ~304 bytes
- * - retries idempotent failures with exponential backoff + jitter
- * - surfaces `Retry-After` when the server is throttling us
+ * The only module that talks to the network, so every cross-cutting concern
+ * lives here rather than in each caller:
+ * - never writes to stdout (the MCP stdio transport owns it)
+ * - conditional requests, so a cached page costs a 304
+ * - retries with exponential backoff plus jitter
+ * - honours `Retry-After` when the origin is throttling us
  */
 
 import { config } from './config.js'
@@ -42,6 +43,7 @@ export class NotModifiedError extends Error {
 
 export function log(message: string, ...rest: unknown[]): void {
     if (!config.verbose) return
+
     // stderr only: stdout is the MCP JSON-RPC channel.
     process.stderr.write(`[refero-design-mcp] ${message}\n`)
     for (const item of rest) process.stderr.write(`${String(item)}\n`)
@@ -49,6 +51,7 @@ export function log(message: string, ...rest: unknown[]): void {
 
 function parseRetryAfter(header: string | null): number | null {
     if (!header) return null
+
     const seconds = Number.parseInt(header, 10)
     if (Number.isFinite(seconds)) return Math.min(Math.max(seconds, 0), 60) * 1000
 
@@ -56,6 +59,7 @@ function parseRetryAfter(header: string | null): number | null {
     if (Number.isFinite(asDate)) {
         return Math.min(Math.max(asDate - Date.now(), 0), 60_000)
     }
+
     return null
 }
 
@@ -65,6 +69,7 @@ const MAX_ATTEMPTS = 3
 function backoffDelay(attempt: number): number {
     const base = 250 * 2 ** ( attempt - 1 )
     const jitter = Math.random() * base * 0.5
+
     return Math.min(base + jitter, 4_000)
 }
 
@@ -72,21 +77,21 @@ const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(r
 
 export interface GetOptions {
     /** Cached validators, enabling a conditional request. */
-    etag?: string | undefined;
-    lastModified?: string | undefined;
+    etag?: string | undefined
+    lastModified?: string | undefined
 }
 
 export interface GetResult {
-    body: string;
-    etag: string | null;
-    lastModified: string | null;
+    body: string
+    etag: string | null
+    lastModified: string | null
 }
 
 export async function get(url: string, options: GetOptions = {}): Promise<GetResult> {
     const headers: Record<string, string> = {
-        'User-Agent': config.userAgent,
         Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en',
+        'User-Agent': config.userAgent,
     }
 
     if (options.etag) headers[ 'If-None-Match' ] = options.etag
@@ -114,7 +119,9 @@ export async function get(url: string, options: GetOptions = {}): Promise<GetRes
                 )
                 if (!RETRYABLE_STATUS.has(response.status) || attempt === MAX_ATTEMPTS) throw error
                 lastError = error
+
                 await sleep(retryAfterMs ?? backoffDelay(attempt))
+
                 continue
             }
 
@@ -128,6 +135,7 @@ export async function get(url: string, options: GetOptions = {}): Promise<GetRes
             // A non-retryable HTTP error should not be swallowed into a retry loop.
             if (error instanceof HttpError && !RETRYABLE_STATUS.has(error.status)) throw error
             if (attempt === MAX_ATTEMPTS) throw error
+
             lastError = error
             await sleep(backoffDelay(attempt))
         }

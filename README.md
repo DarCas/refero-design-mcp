@@ -1,13 +1,11 @@
-# refero-design-mcp
+# refero-design-mcp [![M8ven Score](https://m8ven.ai/badge/mcp/darcas-refero-design-mcp-1077wk)](https://m8ven.ai/mcp/darcas-refero-design-mcp-1077wk?s=readme)
 
 ![Node.js](https://img.shields.io/badge/node.js-%3E%3D20-5FA04E?logo=nodedotjs&logoColor=white&style=for-the-badge)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge)](https://www.typescriptlang.org)
-[![Tests](https://img.shields.io/badge/tests-67%20passing-brightgreen?style=for-the-badge)](#testing)
+[![Tests](https://img.shields.io/badge/tests-74%20passing-brightgreen?style=for-the-badge)](#testing)
 
-[![Version](https://img.shields.io/github/v/tag/DarCas/refero-design-mcp?label=version&style=for-the-badge)](https://github.com/DarCas/refero-design-mcp/releases)
 ![npm](https://img.shields.io/npm/v/@darcas/refero-design-mcp?style=for-the-badge)
 ![NPM Downloads](https://img.shields.io/npm/dy/%40darcas%2Frefero-design-mcp?style=for-the-badge)
-
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
@@ -46,6 +44,49 @@ makes "I found no matches" ambiguous — it usually means *"I looked at 30 of
 1,340"*, not *"nothing exists"*. Every search states its own coverage, and
 `refero_index_status` exists so the model can check before concluding a style is
 absent.
+
+## Performance
+
+The index is deliberately lazy, so almost every tool call has to answer *"how
+much do we actually have?"* before it can answer anything else. Getting that
+wrong is the difference between a search that returns in under a millisecond and
+one that stalls for seconds.
+
+The store keeps cached summaries **and known-absent ids** in memory, and reads
+the cache directory once per session instead of probing a path per style. Both
+directions matter: remembering only the hits would leave the larger half of the
+catalogue re-read on every call.
+
+| Operation | Before | After | Speed-up |
+| --- | ---: | ---: | ---: |
+| `refero_search_styles` — rank 1,342 summaries | 15.5 ms | 12.6 ms | 1.2× |
+| `refero_index_status` | 27.9 ms | 0.15 ms | **186×** |
+| `expand` scan when everything is cached | 49.0 ms | 0.10 ms | **490×** |
+| First call in a process | 372 ms | 70 ms | 5.3× |
+
+```
+speed-up, log scale
+
+ 490x  ████████████████████████████████████████   expand scan, all cached
+ 186x  ██████████████████████████████████         refero_index_status
+ 5.3x  ███████████                                first call in a process
+ 1.2x  █                                          rank 1,342 summaries
+```
+
+Two honest notes on those numbers.
+
+**The ranking barely moved, and that is deliberate.** It was measured before
+being optimised: at ~13 ms across the whole catalogue it was never the
+bottleneck, so the scorer was left alone rather than tuned against a guess.
+
+**The first call in a process is dominated by one sitemap request**, not by the
+disk. That fetch is what makes coverage honest, and it is why it happens once
+rather than per call.
+
+<sub>Median of 15 runs on an Intel i9-12900F / Linux / Node 22, against a warm
+local cache holding 26 of 1,342 published styles. "Before" is the previous
+implementation, measured in the same session on the same machine. Your numbers
+will differ; the ratio is the point, not the milliseconds.</sub>
 
 ## Tools
 
@@ -135,16 +176,27 @@ Every setting is optional.
 
 ```jsonc
 // The model calls these in sequence
-{ "name": "refero_index_status", "arguments": {} }
+{
+  "name": "refero_index_status",
+  "arguments": {}
+}
 // → "Published styles: 1342 / Indexed locally: 1 / Coverage: <1% (1 styles)"
 
-{ "name": "refero_match_style", "arguments": { "brief": "dark, dense dashboard for engineers" } }
+{
+  "name": "refero_match_style",
+  "arguments": {
+    "brief": "dark, dense dashboard for engineers"
+  }
+}
 // → ranked styles, each with matched terms and the north star that drove the match
 
-{ "name": "refero_get_design_md", "arguments": {
+{
+  "name": "refero_get_design_md",
+  "arguments": {
     "style_id": "a73148b9-449b-42cd-9f38-86ef694f500e",
     "sections": ["overview", "colors", "typography"]
-} }
+  }
+}
 // → # Apple, with the palette table and type scale
 ```
 
@@ -187,9 +239,9 @@ npm run verify     # typecheck + lint + test + build
 
 ## Testing
 
-67 tests across 7 files.
+74 tests across 7 files.
 
-Unit tests run **offline**, against a byte-for-byte fixture of a real RSC
+Unit tests run **offline**, against a hand-assembled sample of a real RSC
 payload — the fragile parts (id anchoring, brace matching, lazy reference
 detection) are exactly the parts worth pinning.
 
@@ -203,23 +255,25 @@ indistinguishable from a passing suite.
 
 - **Schemas derived from real payloads, not from documentation.** `spacing.radius`
   is a per-element map (`{cards: "28px", buttons: "9999px"}`), not a string.
-  `similar` is `[{business, why}]`, not `string[]`. `surfaces` is
-  `{hex, name, level, purpose}`. `typeScale` sizes arrive as *numbers*. Every
-  schema is permissive about type and strict about presence, so a partial
-  document degrades instead of throwing away a whole design system.
+  `similar` is `[{business, why}]` on current styles but bare strings on older
+  ones. `surfaces` is `{hex, name, level, purpose}`. A `typeScale` size arrives
+  as `"17"` on one style and `17` on the next, and is normalised to a string at
+  the boundary. Every schema is permissive about type and strict about presence,
+  so a partial document degrades instead of throwing away a whole design system.
 - **Measured and curated data are both kept.** `result.raw` holds tokens with
   usage frequency and context; `result.designSystem` holds the curated reading.
   Frequency is what separates a signature colour from an incidental one.
 - **Truncation respects structure.** Cutting markdown with `slice(0, n)` slices
   code fences in half, which makes the model read broken CSS as if it were the
   design. This server trims on a structural boundary instead, and closes any
-  fence it opens, so a shortened document is still valid.
+  fence it opens, so a shortened document is still valid. Every path that caps a
+  response goes through that helper, including `refero_get_design_md`.
+- **A malformed `style_id` never costs a request.** Ids are checked against the
+  UUID shape before anything reaches the network or the cache directory, so a
+  wrong id returns an error naming the tool that lists valid ones instead of a
+  bare `404`.
 - **Conditional requests everywhere,** so a repeat call usually costs a 304.
 
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
-
-Made with ❤️ by [Dario Casertano (DarCas)](https://casertano.name).

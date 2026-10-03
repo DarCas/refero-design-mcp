@@ -110,6 +110,16 @@ describe.skipIf(!reachable)('live server', () => {
     )
   })
 
+  it('rejects a malformed style id from a tool without touching the network', async () => {
+    // A bare 404 leaves the model nothing to act on.
+    for (const name of ['refero_get_design_md', 'refero_get_style']) {
+      const result = await client.callTool({ name, arguments: { style_id: 'not-a-uuid' } })
+      const body = (result.content as { text: string }[])[0]?.text ?? ''
+      expect(body).toContain('is not a style id')
+      expect(body).toContain('refero_list_style_ids')
+    }
+  })
+
   it('returns structured data for a real style', async () => {
     const result = await client.callTool({
       name: 'refero_get_style',

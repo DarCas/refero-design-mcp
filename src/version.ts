@@ -28,13 +28,16 @@ const PACKAGE_SUFFIX = 'refero-design-mcp'
 export const VERSION: string = ( () => {
     try {
         let dir = dirname(fileURLToPath(import.meta.url))
+
         for (let depth = 0; depth < 6; depth += 1) {
             const candidate = join(dir, 'package.json')
+
             if (existsSync(candidate)) {
                 const pkg = JSON.parse(readFileSync(candidate, 'utf8')) as {
-                    name?: string;
+                    name?: string
                     version?: string
                 }
+
                 // Matched by suffix, not equality: the npm scope is a packaging
                 // concern that changes, and a strict comparison would fail silently
                 // and report 0.0.0-unknown.

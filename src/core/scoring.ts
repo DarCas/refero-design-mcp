@@ -18,14 +18,14 @@
  */
 
 export interface ScoredStyle {
-    id: string;
-    score: number;
-    matchedTerms: string[];
+    id: string
+    matchedTerms: string[]
+    score: number
 }
 
 interface Field {
-    weight: number;
-    values: string[];
+    values: string[]
+    weight: number
 }
 
 /** Mood facets; deliberately non-overlapping keyword sets. */
@@ -40,17 +40,21 @@ const MOOD_FACETS = {
     technical: ['technical', 'dense', 'data', 'dashboard', 'functional', 'systematic'],
 } as const
 
-export type MoodFacet = keyof typeof MOOD_FACETS;
+export type MoodFacet = keyof typeof MOOD_FACETS
 
 const MOOD_LOOKUP = new Map<string, MoodFacet>(
-    ( Object.keys(MOOD_FACETS) as MoodFacet[] ).flatMap(facet =>
-        MOOD_FACETS[ facet ].map(keyword => [keyword, facet] as const),
-    ),
+    ( Object.keys(MOOD_FACETS) as MoodFacet[] )
+        .flatMap(
+            facet => MOOD_FACETS[ facet ]
+                .map(keyword => [
+                    keyword,
+                    facet,
+                ] as const),
+        ),
 )
 
 export function tokenize(input: string): string[] {
-    return input
-        .toLowerCase()
+    return input.toLowerCase()
         .split(/[^a-z0-9+#]+/)
         .filter(token => token.length > 1)
 }
@@ -58,6 +62,7 @@ export function tokenize(input: string): string[] {
 /** True when `needle` appears in `haystack` on a word boundary. */
 export function containsTerm(haystack: string, needle: string): boolean {
     const pattern = new RegExp(`(^|[^a-z0-9])${escapeRegExp(needle)}([^a-z0-9]|$)`, 'i')
+
     return pattern.test(haystack)
 }
 
@@ -72,24 +77,46 @@ function escapeRegExp(value: string): string {
  */
 export function scoreStyle(
     style: {
-        id: string;
-        siteName: string;
-        northStar: string;
-        description?: string;
-        url?: string;
-        colors?: string[];
-        fonts?: string[];
+        colors?: string[]
+        description?: string
+        fonts?: string[]
+        id: string
+        northStar: string
+        siteName: string
+        url?: string
     },
-    terms: string[],
+    terms: readonly string[],
 ): ScoredStyle {
-    if (terms.length === 0) return {id: style.id, score: 0, matchedTerms: []}
+    if (terms.length === 0) return {
+        id: style.id,
+        matchedTerms: [],
+        score: 0,
+    }
 
     const fields: Field[] = [
-        {weight: 5, values: [style.siteName]},
-        {weight: 4, values: [style.northStar]},
-        {weight: 3, values: [...( style.colors ?? [] ), ...( style.fonts ?? [] )]},
-        {weight: 2, values: style.description ? [style.description] : []},
-        {weight: 1, values: style.url ? [style.url] : []},
+        {
+            weight: 5,
+            values: [style.siteName],
+        },
+        {
+            weight: 4,
+            values: [style.northStar],
+        },
+        {
+            weight: 3,
+            values: [
+                ...( style.colors ?? [] ),
+                ...( style.fonts ?? [] ),
+            ],
+        },
+        {
+            weight: 2,
+            values: style.description ? [style.description] : [],
+        },
+        {
+            weight: 1,
+            values: style.url ? [style.url] : [],
+        },
     ]
 
     const matchedTerms = new Set<string>()
@@ -108,6 +135,7 @@ export function scoreStyle(
         if (bestWeight > 0) {
             score += bestWeight
             matchedTerms.add(term)
+
             continue
         }
 
@@ -121,5 +149,9 @@ export function scoreStyle(
         }
     }
 
-    return {id: style.id, score, matchedTerms: [...matchedTerms]}
+    return {
+        id: style.id,
+        matchedTerms: [...matchedTerms],
+        score,
+    }
 }

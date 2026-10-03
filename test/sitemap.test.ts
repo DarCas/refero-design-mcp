@@ -33,4 +33,29 @@ describe('parseStylesSitemap', () => {
     const index = `<sitemapindex><sitemap><loc>https://styles.refero.design/sitemaps/styles.xml</loc></sitemap></sitemapindex>`
     expect(parseStylesSitemap(index)).toEqual([])
   })
+
+  it('does not shift lastmod onto the wrong style when one url omits it', () => {
+    // Pairing two flat lists by index meant a single <url> without a <lastmod>
+    // moved every later timestamp onto the wrong style.
+    const xml = `<urlset>
+  <url><loc>https://styles.refero.design/style/11111111-1111-4111-8111-111111111111</loc></url>
+  <url><loc>https://styles.refero.design/style/22222222-2222-4222-8222-222222222222</loc><lastmod>2026-09-19T10:00:00Z</lastmod></url>
+</urlset>`
+
+    const entries = parseStylesSitemap(xml)
+    expect(entries[0]?.lastmod).toBeUndefined()
+    expect(entries[1]?.lastmod).toBe('2026-09-19T10:00:00Z')
+  })
+
+  it('keeps a lastmod that follows a non-style url', () => {
+    const xml = `<urlset>
+  <url><loc>https://styles.refero.design/</loc><lastmod>2026-09-01T00:00:00Z</lastmod></url>
+  <url><loc>https://styles.refero.design/style/33333333-3333-4333-8333-333333333333</loc><lastmod>2026-09-20T21:33:16Z</lastmod></url>
+</urlset>`
+
+    const entries = parseStylesSitemap(xml)
+    expect(entries).toHaveLength(1)
+    expect(entries[0]?.id).toBe('33333333-3333-4333-8333-333333333333')
+    expect(entries[0]?.lastmod).toBe('2026-09-20T21:33:16Z')
+  })
 })

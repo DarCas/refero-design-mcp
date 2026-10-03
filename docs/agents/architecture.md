@@ -93,13 +93,14 @@ Nothing is fetched at startup.
 ### A search or a match
 
 1. `expandIndex(store, count)` pulls up to `count` uncached styles, bounded
-   twice: `REFERO_MAX_FETCHES` per call, `REFERO_CONCURRENCY` in flight.
+   twice: `REFERO_MAX_FETCHES` per call, `REFERO_CONCURRENCY` in flight. It
+   reports `{requested, indexed, failed}` — never a bare count of attempts.
 2. `store.sitemap()` gives the published set; `store.cachedSummaries()` gives
-   what is on disk.
-3. `tokenize()` → `scoreStyle()` per cached summary → filter `score > 0` →
-   sort → slice to `limit`.
-4. `formatSearchResults(ranked, meta)` prints results **and** the coverage it
-   was computed over.
+   what is on disk, served from the in-memory index after the first call.
+3. `tokenize()` → `rankSummaries(summaries, terms, limit)`: score every
+   summary, drop the zeros, sort, slice.
+4. `formatSearchResults(ranked, meta)` prints the results, the coverage they
+   were computed over, and any index failures.
 
 Nothing is fetched in step 3. A search over a 30-style local index that
 reports "no match" means no match in those 30.
@@ -118,19 +119,46 @@ downstream.
 
 ## Store and cache layout
 
-- Cache root: `REFERO_CACHE_DIR`, default
-  `${XDG_CACHE_HOME ?? $HOME/.cache}/refero-design-mcp`.
+- Cache root: `REFERO_CACHE_DIR`, default `os.homedir()/.cache/refero-design-mcp`,
+  or `$XDG_CACHE_HOME` when set. It falls back to `os.tmpdir()` if the home
+  directory cannot be determined — never to a relative path, which would create
+  a directory inside whatever working directory the client used.
 - One file per style at `styles/<sha256(id).slice(0,32)>.json`. The hash is a
   containment guard: a malformed id cannot escape the cache directory.
-- Envelope: `{etag, lastModified, detail}`. Validators drive conditional GET,
-  so a repeat call usually costs a 304.
-- The sitemap list is cached in-process for 6 h. When it goes stale the
-  refresh happens in the background while the stale list is still served.
+- Envelope: `{etag, lastModified, detail}`. **These** validators drive
+  conditional GET, so a repeat call usually costs a 304. The sitemap's `lastmod`
+  is display metadata and never enters a request.
+- The sitemap list is cached in-process for 6 h. When it goes stale the refresh
+  happens in the background while the stale list is still served, and it is
+  **deduplicated** — concurrent callers share one refresh rather than each
+  starting their own fetch.
+- The cache directory is created once per process, not once per lookup.
 - `getStyle` de-duplicates concurrent requests for the same id through an
   in-flight map.
-- The cache must never land inside the repository. `test/version.test.ts`
-  asserts that and removes `.cache/` if a previous run created one — typically
-  the symptom of `HOME` being unset while running the suite.
+
+### The in-memory index
+
+Cached summaries and known-absent ids are held in memory for the process
+lifetime. This is the single biggest performance property of the store:
+
+| Operation | Before | After |
+| --- | --- | --- |
+| `cachedSummaries()`, warm | 27.7 ms | 0.2 ms |
+| `indexStats()` | 27.9 ms | 0.2 ms |
+| `expandIndex` scan, all cached | 49 ms | 0.1 ms |
+
+Measured against the local cache (26 of 1,342 styles indexed). The cost was
+linear in the catalogue and would have reached ~1.5 s per search at full
+coverage.
+
+Both directions must be memoised. Caching only the hits leaves every
+*uncached* style re-read from disk on each call, which is the larger half of
+the catalogue — `absent` is what makes `expandIndex` cheap. Memory is bounded by
+the published style count.
+
+The cache must never land inside the repository. `test/version.test.ts`
+asserts that and removes `.cache/` if a previous run created one — typically
+the symptom of `HOME` being unset while running the suite.
 
 ## Invariants worth preserving
 

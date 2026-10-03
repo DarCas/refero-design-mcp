@@ -2,11 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { braceMatch, decodeFlightPayload, ExtractionError, extractStyle, findStyleRecord } from '../src/sources/rsc.js'
 
 /**
- * A trimmed copy of the real RSC payload from a published style page.
+ * A hand-assembled sample of the RSC payload shape from a published style page.
  *
- * Fixture rather than live fetch: the extraction rules (id anchoring, brace
- * matching, flight-reference detection) are the fragile part, so they are
- * pinned against a byte-for-byte sample of what the origin actually serves.
+ * Fixture rather than live fetch: id anchoring, brace matching and
+ * flight-reference detection are the fragile parts, so they are pinned against
+ * the awkward shapes that actually occur — a numeric `typeScale.size`, a
+ * per-element `radius` map, a `customSections.content` that is a Flight
+ * reference rather than prose. A real page is ~300 KB; this is the reduction of
+ * it that carries the risk.
  */
 const APPLE_ID = 'a73148b9-449b-42cd-9f38-86ef694f500e'
 const RELATED_ID = '40be36d7-7fe6-4451-9f2d-7ceccfd43be8'
@@ -39,7 +42,6 @@ const RECORD = {
   isAdmin: false,
 }
 
-/** Wrap a payload the way the client receives it. */
 function toHtml(payload: unknown): string {
   const encoded = JSON.stringify(JSON.stringify(payload)).slice(1, -1)
   return `<!DOCTYPE html><html><body><script>self.__next_f.push([1,"${encoded}"])</script></body></html>`

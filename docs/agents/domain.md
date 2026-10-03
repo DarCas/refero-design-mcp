@@ -124,4 +124,13 @@ pinned by the e2e suite, which asserts `## Colours`.
 
 `truncateMarkdown()` cuts on a structural boundary and closes any code fence it
 opens. `slice(0, n)` on markdown halves code fences, and a model reads the broken
-CSS as design intent. The budget is `REFERO_MAX_RESPONSE_CHARS` (default 40,000).
+CSS as design intent. The budget is `REFERO_MAX_RESPONSE_CHARS` (default 40,000),
+and `buildDesignMd()` routes through it — the document generator used to slice
+the joined string itself, which could land inside a `css` block. `maxChars` bounds
+the *content*; the truncation notice is appended on top of it, so a truncated
+document may exceed the budget by roughly the length of that notice.
+
+Real styles are far below the default: of 26 cached styles the median rendered
+`design.md` is ~10,900 characters and the largest is ~12,600, so truncation only
+engages for unusually large component payloads or a lowered
+`REFERO_MAX_RESPONSE_CHARS`.

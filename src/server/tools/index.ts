@@ -27,9 +27,9 @@ import { registerIndexStatus } from './indexStatus.js'
 import { registerListStyleIds } from './listStyleIds.js'
 import { registerMatchStyle } from './matchStyle.js'
 import { registerSearchStyles, type ExpandIndex } from './searchStyles.js'
-import type { ToolDeps } from './shared.js'
+import type { ExpandReport, ToolDeps } from './shared.js'
 
-export type { ToolDeps, ToolText } from './shared.js'
+export type { ExpandReport, ToolDeps, ToolText } from './shared.js'
 
 /**
  * Pull uncached styles into the local index.
@@ -38,30 +38,50 @@ export type { ToolDeps, ToolText } from './shared.js'
  * may pull, and `REFERO_CONCURRENCY` caps how many are in flight at once.
  * Without the second cap a large `expand` would open a burst of hundreds of
  * connections, which is neither fast nor courteous.
+ *
+ * Reports what happened rather than what was asked for: a model told "indexed
+ * 25" when 9 fetches failed will conclude the rest of the catalogue is absent.
  */
-export const expandIndex: ExpandIndex = async (store: Store, count: number): Promise<number> => {
-    const budget = Math.min(count, config.maxNetworkFetchesPerCall)
-    if (budget <= 0) return 0
+export const expandIndex: ExpandIndex = async (store: Store, count: number): Promise<ExpandReport> => {
+    const requested = Math.max(0, Math.min(count, config.maxNetworkFetchesPerCall))
+    if (requested === 0) return {
+        failed: 0,
+        indexed: 0,
+        requested: 0,
+    }
 
     const entries = await store.sitemap()
     const uncached: string[] = []
 
     for (const entry of entries) {
-        if (uncached.length >= budget) break
-        if (( await store.peek(entry.id) ) === null) uncached.push(entry.id)
+        if (uncached.length >= requested) break
+        // Sequential on purpose: it stops as soon as the budget is full, so the
+        // common case inspects only a handful of ids. `isCached` answers from
+        // memory for anything already seen this session.
+        if (!( await store.isCached(entry.id) )) uncached.push(entry.id)
     }
 
-    if (uncached.length === 0) return 0
+    if (uncached.length === 0) return {
+        failed: 0,
+        indexed: 0,
+        requested,
+    }
 
     log(`expanding index with ${uncached.length} styles (concurrency ${config.fetchConcurrency})`)
 
     let indexed = 0
-    await mapWithConcurrency(uncached, config.fetchConcurrency, async id => {
+    const outcome = await mapWithConcurrency(uncached, config.fetchConcurrency, async id => {
         await store.getStyle(id)
         indexed += 1
     })
 
-    return indexed
+    if (outcome.failed > 0) log(`failed to index ${outcome.failed} of ${uncached.length} styles`)
+
+    return {
+        failed: outcome.failed,
+        indexed,
+        requested,
+    }
 }
 
 export function registerTools(server: McpServer, deps: ToolDeps): void {

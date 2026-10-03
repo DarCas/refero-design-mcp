@@ -14,20 +14,25 @@
 
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import { config } from '../../config.js'
+import { scoreStyle } from '../../core/scoring.js'
 import type { Store } from '../../index/store.js'
 import type { StyleSummary } from '../../types.js'
 
 /** Tool handlers return the SDK's own result type, so no adapter is needed. */
-export type ToolText = CallToolResult;
+export type ToolText = CallToolResult
 
-/** Everything a tool needs from the wider application. */
 export interface ToolDeps {
-    store: Store;
-    version: string;
+    store: Store
+    version: string
 }
 
 export function text(body: string): ToolText {
-    return {content: [{type: 'text', text: body}]}
+    return {
+        content: [{
+            text: body,
+            type: 'text',
+        }],
+    }
 }
 
 /**
@@ -37,50 +42,88 @@ export function text(body: string): ToolText {
  * guidance; a tool that returns an error string can say what to do next.
  */
 export function errorText(message: string, hint?: string): ToolText {
-    const body = hint ? `Error: ${message}\n\nHint: ${hint}` : `Error: ${message}`
-    return text(body)
+    return text(hint ? `Error: ${message}\n\nHint: ${hint}` : `Error: ${message}`)
 }
 
-/** Clamp a caller-supplied limit into a sane range. */
-export function defaultLimit(input: number | undefined, fallback: number): number {
+/**
+ * Clamp a caller-supplied limit.
+ *
+ * `max` must mirror the tool's own `inputSchema` maximum, or the model gets
+ * fewer rows than it asked for with nothing in the response to say so.
+ */
+export function defaultLimit(input: number | undefined, fallback: number, max: number): number {
     if (input === undefined || !Number.isFinite(input) || input <= 0) return fallback
-    return Math.min(Math.floor(input), 50)
+
+    return Math.min(Math.floor(input), max)
 }
 
 export function charBudget(): number {
     return config.maxResponseChars
 }
 
+/**
+ * Score every summary and return the best `limit`, dropping the misses.
+ *
+ * Shared by search and match: two rankings that disagree would show the model
+ * contradictory answers for the same words. A score of 0 means neither a literal
+ * nor a mood-facet hit, so it is dropped rather than ranked last. The sort is
+ * stable, keeping equal scores in sitemap order and the output reproducible.
+ */
+export function rankSummaries(
+    summaries: readonly StyleSummary[],
+    terms: readonly string[],
+    limit: number,
+): RankedSummary[] {
+    return summaries
+        .map(style => {
+            const scored = scoreStyle(summaryToScorable(style), terms)
+
+            return {
+                matchedTerms: scored.matchedTerms,
+                score: scored.score,
+                style,
+            }
+        })
+        .filter(entry => entry.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limit)
+}
+
 export interface ScorableStyle {
-    id: string;
-    siteName: string;
-    northStar: string;
-    description?: string;
-    url?: string;
-    colors?: string[];
-    fonts?: string[];
+    colors?: string[]
+    description?: string
+    fonts?: string[]
+    id: string
+    northStar: string
+    siteName: string
+    url?: string
 }
 
 /**
- * Reduce a summary to the fields the scorer looks at. Search and match both
- * run off cached summaries, so this is the common entry point: scoring never
- * needs the full design system, and fetching one per candidate would cost
- * 300 KB per result.
+ * Reduce a summary to the fields the scorer reads.
+ *
+ * Scoring never needs the full design system, and fetching one per candidate
+ * would cost 300 KB per result.
  */
 export function summaryToScorable(summary: StyleSummary): ScorableStyle {
     return {
-        id: summary.id,
-        siteName: summary.siteName,
-        northStar: summary.northStar,
-        description: summary.description,
-        url: summary.url,
         colors: summary.colors.map(color => `${color.name} ${color.hex}`),
+        description: summary.description,
         fonts: summary.fonts,
+        id: summary.id,
+        northStar: summary.northStar,
+        siteName: summary.siteName,
+        url: summary.url,
     }
 }
 
 export function formatSummaryLine(summary: StyleSummary): string {
-    const fonts = summary.fonts.length > 0 ? summary.fonts.slice(0, 2).join(', ') : 'no fonts listed'
+    const fonts = summary.fonts.length > 0
+        ? summary.fonts
+            .slice(0, 2)
+            .join(', ')
+        : 'no fonts listed'
+
     const swatches =
         summary.colors.length > 0
             ? summary.colors
@@ -102,15 +145,35 @@ export function formatSummaryLine(summary: StyleSummary): string {
 }
 
 export interface RankedSummary {
-    style: StyleSummary;
-    score: number;
-    matchedTerms: string[];
+    matchedTerms: string[]
+    score: number
+    style: StyleSummary
+}
+
+/** What an `expand` actually achieved, as opposed to what it was asked for. */
+export interface ExpandReport {
+    failed: number
+    indexed: number
+    requested: number
+}
+
+/** Phrased once so every tool reports index growth and failures identically. */
+export function describeExpand(report: ExpandReport): string[] {
+    const lines: string[] = []
+
+    if (report.indexed > 0) lines.push(`Indexed ${report.indexed} additional styles on this call.`)
+
+    if (report.failed > 0) {
+        lines.push(`${report.failed} style(s) could not be fetched and are not indexed; the origin may be rate-limiting.`)
+    }
+
+    return lines
 }
 
 export interface Coverage {
-    searched: number;
-    published: number;
-    expanded: number;
+    expand: ExpandReport
+    published: number
+    searched: number
 }
 
 export function formatSearchResults(ranked: RankedSummary[], meta: Coverage): string {
@@ -119,6 +182,7 @@ export function formatSearchResults(ranked: RankedSummary[], meta: Coverage): st
             'No styles matched.',
             '',
             `Searched ${meta.searched} locally indexed styles out of ${meta.published} published.`,
+            ...describeExpand(meta.expand),
             '',
             'The index grows on demand. Call the tool again, or pass a larger `expand` to pull more styles in.',
         ].join('\n')
@@ -127,17 +191,22 @@ export function formatSearchResults(ranked: RankedSummary[], meta: Coverage): st
     const lines: string[] = []
     lines.push(
         `Found ${ranked.length} matching style(s), from ${meta.searched} searched of ${meta.published} published.`,
+        ...describeExpand(meta.expand),
+        '',
     )
-    if (meta.expanded > 0) lines.push(`Indexed ${meta.expanded} additional styles on this call.`)
-    lines.push('')
 
     ranked.forEach((entry, index) => {
-        lines.push(`### ${index + 1}. ${entry.style.siteName} (score ${entry.score})`)
-        lines.push(formatSummaryLine(entry.style))
+        lines.push(
+            `### ${index + 1}. ${entry.style.siteName} (score ${entry.score})`,
+            formatSummaryLine(entry.style),
+        )
+
         if (entry.matchedTerms.length > 0) lines.push(`  matched: ${entry.matchedTerms.join(', ')}`)
+
         lines.push('')
     })
 
     lines.push('Get the full design system with `refero_get_design_md` using the style id.')
+
     return lines.join('\n')
 }

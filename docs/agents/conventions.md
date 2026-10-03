@@ -34,20 +34,20 @@ exception, and it exists because the suites cast fixture JSON.
 been reformatted to match. Do not "fix" one side in passing — pick a direction
 and apply it everywhere. Concretely:
 
-- **Indentation.** `.editorconfig` says `indent_size = 4`. Almost all of `src/`
-  now uses 4. The exceptions are `src/types.ts`, `src/sources/rsc.ts` and
-  `src/sources/sitemap.ts` (still 2) and **all of `test/`** (still 2). New code
-  in `src/` should use 4; do not reindent files you are not otherwise changing.
+- **Indentation — settled: `src/` is 4, `test/` is 2.** Every file in `src/` now
+  uses `indent_size = 4`; `test/` uses 2 throughout. Match the tree you are in.
+  Note that `.editorconfig` cannot express this split, so an agent that follows
+  it literally will reindent `test/` to 4 and produce a diff nobody asked for.
 - **Parentheses and brackets.** The config asks for `foo( bar )` and `[ a, b ]`.
   The code overwhelmingly writes `foo(bar)` and `[a, b]`; a handful of files
   (`config.ts`, `version.ts`, `scoring.ts`) do follow the IntelliJ spacing.
   Match the file you are editing. Reformatting either way is a very large diff.
 - **Import member order.** The config asks for sorted members; import lists are
   unsorted throughout.
-- **Line length.** `max_line_length = 100` and nothing enforces it. 32 lines
-  exceed 100 characters, 14 of them exceed 110. Worst files:
-  `test/rsc.test.ts` and `src/core/designMd.ts` (10 each),
-  `src/server/tools/matchStyle.ts` (8).
+- **Line length.** `max_line_length = 100` and nothing enforces it. 66 lines
+  across `src/` and `test/` exceed 100 characters, some over 110. Worst files:
+  `test/rsc.test.ts` (10), `src/server/tools/listStyleIds.ts` (9),
+  `test/sitemap.test.ts` (6), `src/server/tools/matchStyle.ts` (6).
 
 The `ij_*` keys in `.editorconfig` are IntelliJ settings, not tooling. Only the
 semicolon rule has a linter behind it, which is why the rest is convention
@@ -69,6 +69,86 @@ rather than guarantee. `root = true` stops the search above this directory.
   is `.ts`. A missing extension compiles and then fails at runtime.
 - `exactOptionalPropertyTypes` is off; `noUncheckedIndexedAccess` is on, so
   indexed access yields `T | undefined` and needs a guard.
+
+## Formatting
+
+Enforced by lint: `@/semi: never`, `eqeqeq`, `no-console`,
+`consistent-type-imports`, `no-floating-promises`. Not enforced, so these are
+convention — match the surrounding code and do not reformat a file you are not
+otherwise changing.
+
+- **Indentation: `src/` is 4 spaces, `test/` is 2.** `src/config.ts` was the
+  original holdout and no longer is.
+- **No trailing semicolon on a type alias.** `export type X = Y` — the `@/semi`
+  rule does not reach type aliases, so this is on you. Five of the seven
+  `z.infer` aliases in `src/types.ts` and `src/core/scoring.ts` set the pattern;
+  a stray `;` survives review because nothing complains.
+- **Line length 100.** Unenforced. Long zod chains and tool descriptions exceed
+  it; do not add more.
+
+### Zod schema chains
+
+One rule, keyed on nesting depth. It is what `src/types.ts` does throughout:
+
+```ts
+// top-level field: the modifier gets its own line
+lastmod: z.string()
+    .optional(),
+
+// nested object field: the chain stays inline
+colors: z.array(
+    z.object({
+        hex: z.string().default(''),
+    }),
+)
+    .default([]),
+```
+
+A top-level field with **no** modifier stays on one line (`id: z.string(),`).
+The rule exists because the top level is where a schema is *read* — the column of
+terminal modifiers is what makes the optionality of twenty fields scannable —
+while a nested literal is a wall of uniform entries either way.
+
+Single quotes throughout. Double quotes appear only where the string contains an
+apostrophe.
+
+## Comments
+
+Write a comment only when it carries something the code cannot:
+
+1. **An invariant a reader could violate** — the ordering, the bound, the
+   precondition. State it in the present tense.
+2. **A failure mode invisible in the code** — a bug that fires only on one load
+   order, one platform, or one malformed input. `src/version.ts` is the
+   reference: the temporal-dead-zone crash cannot be seen by reading the code.
+
+Anything else is noise. A comment that restates a signature, narrates what the
+code used to do, or quotes a measurement will be wrong within one release.
+
+| Do not write | Write instead |
+| --- | --- |
+| "Previously this probed a path per style" | "Uncached styles outnumber cached ones; memoise absences too" |
+| "Measured ~28 ms for 26 styles" | The number belongs in `docs/agents/architecture.md` |
+| "All published style ids, from the sitemap" | Nothing — the signature says it |
+
+Budgets: module doc ≤ 8 lines, function doc ≤ 4, field comment ≤ 3. A comment
+needing more is usually documenting two things.
+
+A comment must never describe behaviour the code does not implement. If it
+states an intent, implement it or delete it — a wrong comment costs more than a
+missing one, because it gets trusted.
+
+Rationale goes in the module doc. An inline comment earns its place only for a
+trap local to those few lines.
+
+Alongside `npm run verify`:
+
+- `grep -rniE 'previous|used to|formerly' src/` should match only
+  `src/version.ts`
+- no comment in `src/` should quote a measurement
+
+Treat both as review prompts rather than build gates: the words can be innocent,
+but hitting them should make you re-read the comment.
 
 ## Naming
 

@@ -17,13 +17,15 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { log } from './http.js'
 import { createServer } from './server/index.js'
 
-async function main(): Promise<void> {
+( async function main(): Promise<void> {
     const server = createServer()
     const transport = new StdioServerTransport()
 
     const shutdown = (signal: NodeJS.Signals): void => {
         log(`received ${signal}, shutting down`)
-        void server.close().finally(() => process.exit(0))
+
+        void server.close()
+            .finally(() => process.exit(0))
     }
 
     process.on('SIGINT', shutdown)
@@ -31,9 +33,7 @@ async function main(): Promise<void> {
 
     await server.connect(transport)
     log('ready on stdio')
-}
-
-main().catch((error: unknown) => {
+} )().catch((error: unknown) => {
     process.stderr.write(`[refero-design-mcp] fatal: ${String(error)}\n`)
     process.exit(1)
 })

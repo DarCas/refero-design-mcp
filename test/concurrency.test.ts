@@ -4,16 +4,16 @@ import { mapWithConcurrency } from '../src/core/concurrency.js'
 const tick = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
 
 describe('mapWithConcurrency', () => {
-  it('returns 0 for an empty batch', async () => {
-    expect(await mapWithConcurrency([], 4, () => undefined)).toBe(0)
+  it('reports an empty batch', async () => {
+    expect(await mapWithConcurrency([], 4, () => undefined)).toEqual({ completed: 0, failed: 0 })
   })
 
   it('processes every item', async () => {
     const seen: number[] = []
-    const count = await mapWithConcurrency([1, 2, 3, 4, 5], 2, item => {
+    const outcome = await mapWithConcurrency([1, 2, 3, 4, 5], 2, item => {
       seen.push(item)
     })
-    expect(count).toBe(5)
+    expect(outcome).toEqual({ completed: 5, failed: 0 })
     expect(seen.sort()).toEqual([1, 2, 3, 4, 5])
   })
 
@@ -33,12 +33,14 @@ describe('mapWithConcurrency', () => {
 
   it('keeps going when one item throws', async () => {
     const done: number[] = []
-    const count = await mapWithConcurrency([1, 2, 3], 2, item => {
+    const outcome = await mapWithConcurrency([1, 2, 3], 2, item => {
       if (item === 2) throw new Error('boom')
       done.push(item)
     })
     expect(done.sort()).toEqual([1, 3])
-    expect(count).toBe(3)
+    // The failure is counted, not silently folded into the total: a caller that
+    // reports coverage to the model must not claim a style it failed to index.
+    expect(outcome).toEqual({ completed: 2, failed: 1 })
   })
 
   it('treats a width below 1 as serial', async () => {

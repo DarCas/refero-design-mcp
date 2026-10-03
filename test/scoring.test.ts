@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { containsTerm, scoreStyle, tokenize } from '../src/core/scoring.js'
+import { rankSummaries } from '../src/server/tools/shared.js'
+import { styleSummarySchema } from '../src/types.js'
 
 const style = {
   id: 'style-1',
@@ -79,5 +81,47 @@ describe('scoreStyle', () => {
     const scored = scoreStyle(style, ['linear', 'inter', 'kubernetes'])
     expect(scored.matchedTerms).toEqual(expect.arrayContaining(['linear', 'inter']))
     expect(scored.matchedTerms).not.toContain('kubernetes')
+  })
+
+  it('scores identically through rankSummaries', () => {
+    // The tools rank through the shared helper rather than calling the scorer
+    // themselves, so the two paths must agree or search and match would rank
+    // the same words differently.
+    const terms = tokenize('dense dark interface')
+    const summary = styleSummarySchema.parse({
+      id: style.id,
+      siteName: style.siteName,
+      url: style.url,
+      description: style.description,
+      northStar: style.northStar,
+      fonts: style.fonts,
+      colors: [{ name: 'Indigo', hex: '#5e6ad2' }],
+      stylePageUrl: 'https://styles.refero.design/style/00000000-0000-4000-8000-000000000001',
+    })
+
+    const ranked = rankSummaries([summary], terms, 5)
+    expect(ranked).toHaveLength(1)
+    expect(ranked[0]?.score).toBe(scoreStyle(style, terms).score)
+  })
+})
+
+describe('rankSummaries', () => {
+  const make = (id: string, siteName: string) =>
+    styleSummarySchema.parse({
+      id,
+      siteName,
+      northStar: 'a quiet interface',
+      stylePageUrl: `https://styles.refero.design/style/${id}`,
+    })
+
+  it('drops styles that match nothing', () => {
+    expect(rankSummaries([make('a', 'Apple')], tokenize('kubernetes'), 5)).toEqual([])
+  })
+
+  it('honours the limit and ranks by descending score', () => {
+    const summaries = [make('a', 'Kubernetes'), make('b', 'Apple'), make('c', 'Apple')]
+    const ranked = rankSummaries(summaries, ['apple'], 2)
+    expect(ranked).toHaveLength(2)
+    expect(ranked[0]?.score).toBeGreaterThanOrEqual(ranked[1]?.score ?? 0)
   })
 })

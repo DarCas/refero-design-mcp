@@ -1,6 +1,6 @@
 # Testing
 
-Vitest, 7 files, 67 tests. No test framework config file — `npm test` is
+Vitest, 7 files, 74 tests. No test framework config file — `npm test` is
 `vitest run` with defaults.
 
 ## Commands
@@ -22,10 +22,13 @@ which is precisely how a real regression slips through.
 Every suite except `test/e2e.test.ts` runs with no network and no fixtures beyond
 what is in the repository.
 
-- `test/rsc.test.ts` pins the fragile parts against a byte-for-byte fixture of a
-  real RSC payload: id anchoring, brace matching, lazy-reference detection. **If
-  you change parsing, update the fixture and pin the new behaviour.** A parsing
-  change without a fixture update is not verified.
+- `test/rsc.test.ts` pins the fragile parts against a hand-assembled sample of
+  the RSC payload: id anchoring, brace matching, lazy-reference detection. It is
+  a deliberate reduction of a ~300 KB page, not a byte-for-byte capture — the
+  awkward shapes it reproduces (numeric `typeScale.size`, per-element `radius`
+  map, a Flight reference as `customSections.content`) are the ones that broke
+  in practice. **If you change parsing, update the fixture and pin the new
+  behaviour.** A parsing change without a fixture update is not verified.
 - Other suites build their inputs inline (`scoring`, `designMd`, `sitemap`,
   `concurrency`).
 

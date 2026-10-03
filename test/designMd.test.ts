@@ -78,6 +78,24 @@ describe('buildDesignMd', () => {
     const markdown = buildDesignMd(detail, {}, 120)
     expect(markdown).toContain('truncated')
   })
+
+  it('never leaves a code fence open when the document is cut', () => {
+    // A raw `slice(0, n)` cap lands inside a `css` block, and the test
+    // above passed anyway because it only looked for the word "truncated".
+    const withCode: StyleDetail = {
+      ...detail,
+      designSystem: {
+        ...detail.designSystem,
+        components: [{ name: 'Card', css: '.card { color: red; }'.repeat(40) }],
+      },
+    }
+
+    for (const budget of [80, 140, 200, 300, 500, 900]) {
+      const markdown = buildDesignMd(withCode, {}, budget)
+      const fences = markdown.split('\n').filter(line => line.trim().startsWith('```'))
+      expect(fences.length % 2, `budget ${budget} left ${fences.length} fences`).toBe(0)
+    }
+  })
 })
 
 describe('truncateMarkdown', () => {
@@ -88,7 +106,7 @@ describe('truncateMarkdown', () => {
   })
 
   it('never returns an unterminated code fence', () => {
-    // Slicing with `slice(0, n)` used to cut fences in half.
+    // A character-count cut would leave an odd number of fences.
     const document = ['text', '```html', '<div class="card">content</div>', '```', 'more'].join('\n')
     const result = truncateMarkdown(document, 20)
     const fences = result.text.split('\n').filter(line => line.trim().startsWith('```'))

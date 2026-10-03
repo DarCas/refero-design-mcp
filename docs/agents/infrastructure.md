@@ -99,6 +99,13 @@ the repo root; the version suite deletes it and fails if it reappears.
 ## Known gaps
 
 - No tool for collections (`sitemaps/collections.xml`, 52 entries, unused).
+- `refero_get_style` has no response budget. The largest cached style payload is
+  ~50 KB of JSON, which is acceptable today, but there is no ceiling if a future
+  style carries a much larger measured-token set.
+- `refero_index_status` and the search tools read the sitemap on a 6 h TTL held
+  in memory only. A long-lived server that restarts pays one sitemap fetch per
+  process; persisting it to disk was considered and deferred as not worth the
+  extra state.
 - `package-lock.json` is stale: it records the root package as unscoped
   `refero-design-mcp` at `0.1.0`, while `package.json` says
   `@darcas/refero-design-mcp` at `1.0.2`. It does not block a release — `npm ci`

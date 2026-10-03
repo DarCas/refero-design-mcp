@@ -13,10 +13,9 @@ export function registerIndexStatus(server: McpServer, deps: ToolDeps): void {
     server.registerTool(
         'refero_index_status',
         {
-            title: 'Refero index coverage',
-            description:
-                'Report how many published styles exist and how many are indexed locally. Call this before concluding that a style does not exist: a miss usually means it has not been indexed yet.',
+            description: 'Report how many published styles exist and how many are indexed locally. Call this before concluding that a style does not exist: a miss usually means it has not been indexed yet.',
             inputSchema: {},
+            title: 'Refero index coverage',
         },
         async (): Promise<ToolText> => {
             try {

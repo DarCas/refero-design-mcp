@@ -19,6 +19,15 @@ order, six tools, one resource. It holds no logic of its own.
 | `refero_get_style` | `style_id`, `include_measured_tokens?`, `refresh?` | JSON; measured tokens included by default |
 | `refero_list_style_ids` | `offset?`, `limit?`, `updated_since?` | `limit` ≤ 200 (default 50); reads the sitemap only, no page fetches |
 
+Every `limit` maximum is enforced twice: by the zod schema and by
+`defaultLimit(input, fallback, max)`. The two must agree, and each tool declares
+its own `MAX_LIMIT` next to its default for exactly that reason. A limit the
+schema accepts and the code then silently narrows is worse than no limit.
+
+`style_id` is validated against the UUID shape before any request. A malformed
+id used to be forwarded to the origin and answered with a bare 404; it now
+returns an error naming `refero_list_style_ids` as the recovery step.
+
 Plus the resource `refero://style/{style_id}/design.md` (`text/markdown`),
 registered in `src/server/resources/designMd.ts`.
 
@@ -45,6 +54,13 @@ still a conditional request when validators exist.
 - **State the coverage in every result.** `formatSearchResults()` takes a
   `Coverage` argument for exactly this. A result computed from a partial index
   must say so.
+- **Report what happened, not what was asked for.** `expandIndex()` returns an
+  `ExpandReport` (`requested`, `indexed`, `failed`) and `describeExpand()`
+  phrases it. A model told "indexed 25" when nine fetches failed will conclude
+  the rest of the catalogue is absent.
+- **Rank through `rankSummaries()`.** It lives in `shared.ts` next to the
+  scorer, so search and match cannot drift apart. A score of 0 means no literal
+  and no mood-facet hit, and is dropped rather than ranked last.
 - **Degrade, do not invent.** An empty search says how many of how many were
   searched; `refero_index_status` exists so "not indexed yet" is
   distinguishable from "does not exist".

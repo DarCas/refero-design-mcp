@@ -13,7 +13,24 @@
  */
 
 import { Store } from '../../index/store.js'
+import { isStyleId } from '../../types.js'
 import { errorText, type ToolText } from './shared.js'
+
+/**
+ * Reject a malformed style id before it costs a request.
+ *
+ * The id becomes a cache path key and a URL segment downstream, and a bare 404
+ * gives the model nothing to act on, so the hint names the tool that lists
+ * valid ids.
+ */
+export function validateStyleId(styleId: string): ToolText | null {
+    if (isStyleId(styleId)) return null
+
+    return errorText(
+        `"${styleId}" is not a style id.`,
+        'Style ids are UUIDs, for example "a73148b9-449b-42cd-9f38-86ef694f500e". Use `refero_list_style_ids` to find valid ones.',
+    )
+}
 
 export function reportStyleError(error: unknown, styleId: string): ToolText {
     if (Store.isNotFound(error)) {
