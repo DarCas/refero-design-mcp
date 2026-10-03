@@ -8,7 +8,7 @@
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
-import { defaultLimit, errorText, text, type ToolDeps, type ToolText } from './shared.js'
+import { defaultLimit, errorText, text, TOOL_ANNOTATIONS, type ToolDeps, type ToolText } from './shared.js'
 
 const DEFAULT_LIMIT = 50
 /** Must match the `limit` maximum in the schema below. */
@@ -25,6 +25,7 @@ export function registerListStyleIds(server: McpServer, deps: ToolDeps): void {
                 updated_since: z.string().optional().describe('ISO date; return only styles modified after this date.'),
             },
             title: 'List style ids from the sitemap',
+            annotations: TOOL_ANNOTATIONS,
         },
         async ({limit, offset, updated_since}: {
             limit?: number

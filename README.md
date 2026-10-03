@@ -99,6 +99,12 @@ will differ; the ratio is the point, not the milliseconds.</sub>
 | `refero_get_style` | Parsed design system plus measured tokens, as JSON |
 | `refero_list_style_ids` | Style UUIDs from the sitemap, without reading any page |
 
+Every tool declares all four MCP behavioural hints — `readOnlyHint: true`,
+`destructiveHint: false`, `idempotentHint: true`, `openWorldHint: true`. None of
+them mutates the origin, the cache, or anything the caller owns; all of them can
+read `styles.refero.design`. Clients that gate on these get an accurate answer
+without having to infer it.
+
 A resource, `refero://style/{id}/design.md`, is exposed for clients that prefer
 resource reads over tool calls.
 

@@ -16,6 +16,7 @@ import {
     formatSummaryLine,
     rankSummaries,
     text,
+    TOOL_ANNOTATIONS,
     type ToolDeps,
     type ToolText,
 } from './shared.js'
@@ -50,6 +51,7 @@ export function registerMatchStyle(server: McpServer, deps: ToolDeps, expandInde
                     .describe(`Maximum matches (default ${DEFAULT_LIMIT}).`),
             },
             title: 'Match a brief to Refero styles',
+            annotations: TOOL_ANNOTATIONS,
         },
         async ({brief, expand, limit}: {
             brief: string
@@ -108,7 +110,7 @@ export function registerMatchStyle(server: McpServer, deps: ToolDeps, expandInde
 
                 lines.push(
                     ...describeExpand(expansion),
-                    
+
                     '',
                     'Run `refero_get_design_md` on the strongest id to get the usable system.',
                 )

@@ -15,6 +15,7 @@ import {
     formatSearchResults,
     rankSummaries,
     text,
+    TOOL_ANNOTATIONS,
     type ExpandReport,
     type ToolDeps,
     type ToolText,
@@ -48,6 +49,7 @@ export function registerSearchStyles(server: McpServer, deps: ToolDeps, expandIn
                     .describe('Free-text query, e.g. "minimal ecommerce" or "brutalist mono".'),
             },
             title: 'Search Refero styles',
+            annotations: TOOL_ANNOTATIONS,
         },
         async ({limit, expand, query}: {
             expand?: number

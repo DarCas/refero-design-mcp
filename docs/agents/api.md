@@ -28,6 +28,24 @@ schema accepts and the code then silently narrows is worse than no limit.
 id used to be forwarded to the origin and answered with a bare 404; it now
 returns an error naming `refero_list_style_ids` as the recovery step.
 
+### Behavioural hints
+
+Every tool carries all four MCP hints, from `TOOL_ANNOTATIONS` in `shared.ts`:
+`readOnlyHint: true`, `destructiveHint: false`, `idempotentHint: true`,
+`openWorldHint: true`. They are shared rather than repeated so the six
+declarations cannot drift, and `test/e2e.test.ts` asserts all four on every tool
+— a tool added without them fails the suite instead of shipping silently.
+
+`openWorldHint` is true across the board because every tool can read
+`styles.refero.design`, and a warm cache is one miss away from a fetch. A tool
+that genuinely differs should pass its own object rather than editing the shared
+one.
+
+Note that `title` and `annotations.title` are different things in the spec. This
+server passes `title` at the top level of `registerTool`, which is the
+client-displayed name; `annotations` holds the behavioural hints. Do not move one
+into the other.
+
 Plus the resource `refero://style/{style_id}/design.md` (`text/markdown`),
 registered in `src/server/resources/designMd.ts`.
 
@@ -76,8 +94,10 @@ still a conditional request when validators exist.
 3. One line in `registerTools()` in `src/server/tools/index.ts`.
 4. Reuse `core/scoring.ts` if it ranks anything. Do not write a second scorer.
 5. Add the name to the `advertises its tools` assertion in `test/e2e.test.ts`.
-6. Add a row to the tool table in `README.md`.
-7. If the tool addresses a single style, route errors through
+6. Pass `annotations: TOOL_ANNOTATIONS` — or its own object if the behaviour
+   genuinely differs. The `declares all four behavioural hints` test enforces it.
+7. Add a row to the tool table in `README.md`.
+8. If the tool addresses a single style, route errors through
    `reportStyleError()`.
 
 ## The resource must stay listable

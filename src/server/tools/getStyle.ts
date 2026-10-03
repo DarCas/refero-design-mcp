@@ -9,7 +9,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import { reportStyleError, validateStyleId } from './errors.js'
-import { text, type ToolDeps, type ToolText } from './shared.js'
+import { text, TOOL_ANNOTATIONS, type ToolDeps, type ToolText } from './shared.js'
 
 export function registerGetStyle(server: McpServer, deps: ToolDeps): void {
     server.registerTool(
@@ -25,6 +25,7 @@ export function registerGetStyle(server: McpServer, deps: ToolDeps): void {
                 style_id: z.string().describe('Style UUID.'),
             },
             title: 'Get a style as structured data',
+            annotations: TOOL_ANNOTATIONS,
         },
         async ({include_measured_tokens, refresh, style_id}: {
             include_measured_tokens?: boolean

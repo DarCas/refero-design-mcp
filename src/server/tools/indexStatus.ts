@@ -7,7 +7,7 @@
 /** `refero_index_status` — honest reporting of local index coverage. */
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { errorText, text, type ToolDeps, type ToolText } from './shared.js'
+import { errorText, text, TOOL_ANNOTATIONS, type ToolDeps, type ToolText } from './shared.js'
 
 export function registerIndexStatus(server: McpServer, deps: ToolDeps): void {
     server.registerTool(
@@ -16,6 +16,7 @@ export function registerIndexStatus(server: McpServer, deps: ToolDeps): void {
             description: 'Report how many published styles exist and how many are indexed locally. Call this before concluding that a style does not exist: a miss usually means it has not been indexed yet.',
             inputSchema: {},
             title: 'Refero index coverage',
+            annotations: TOOL_ANNOTATIONS,
         },
         async (): Promise<ToolText> => {
             try {

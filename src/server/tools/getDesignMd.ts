@@ -11,7 +11,7 @@ import { z } from 'zod'
 import { buildDesignMd } from '../../core/designMd.js'
 import { sectionSchema, SECTIONS, type Section } from '../../types.js'
 import { reportStyleError, validateStyleId } from './errors.js'
-import { charBudget, text, type ToolDeps, type ToolText } from './shared.js'
+import { charBudget, text, TOOL_ANNOTATIONS, type ToolDeps, type ToolText } from './shared.js'
 
 export function registerGetDesignMd(server: McpServer, deps: ToolDeps): void {
     server.registerTool(
@@ -27,6 +27,7 @@ export function registerGetDesignMd(server: McpServer, deps: ToolDeps): void {
                 style_id: z.string().describe('Style UUID, e.g. "a73148b9-449b-42cd-9f38-86ef694f500e".'),
             },
             title: 'Get design.md for a style',
+            annotations: TOOL_ANNOTATIONS,
         },
         async ({style_id, sections, refresh}: {
             refresh?: boolean

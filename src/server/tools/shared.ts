@@ -12,7 +12,7 @@
  * a cycle through the registration barrel.
  */
 
-import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ToolAnnotations } from '@modelcontextprotocol/sdk/types.js'
 import { config } from '../../config.js'
 import { scoreStyle } from '../../core/scoring.js'
 import type { Store } from '../../index/store.js'
@@ -20,6 +20,24 @@ import type { StyleSummary } from '../../types.js'
 
 /** Tool handlers return the SDK's own result type, so no adapter is needed. */
 export type ToolText = CallToolResult
+
+/**
+ * Behavioural hints, declared on every tool.
+ *
+ * All six tools are read-only: none mutates the origin, the cache, or anything
+ * the caller owns. `openWorldHint` is true throughout because every tool can
+ * read `styles.refero.design`, and a warm cache is one miss away from a fetch —
+ * none of them is confined to a closed system.
+ *
+ * Shared rather than repeated so the six declarations cannot drift apart. A tool
+ * whose behaviour actually differs should pass its own object, not edit this.
+ */
+export const TOOL_ANNOTATIONS: ToolAnnotations = {
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: true,
+    readOnlyHint: true,
+}
 
 export interface ToolDeps {
     store: Store
