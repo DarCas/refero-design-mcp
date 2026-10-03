@@ -4,8 +4,8 @@ Working notes for coding agents on this repository. Read before changing code.
 
 MCP server over the public pages of `styles.refero.design`: it extracts design
 systems out of Next.js React Server Component payloads embedded in style pages.
-Node 22, TypeScript, ESM, Vitest. One package, no framework beyond the MCP SDK
-and zod.
+Node 22.23.2 (see `.nvmrc`; `engines` requires `>=22.12`), TypeScript, ESM,
+Vitest 5. One package, no framework beyond the MCP SDK and zod.
 
 ## Commands
 
@@ -22,6 +22,7 @@ npm start          # node dist/cli.js, after a build
 | `npm run lint` | `eslint src test` | Type-aware. Use `--fix`; never hand-fix the semicolon rule |
 | `npm test` | `vitest run` | 74 tests / 7 files. The e2e suite hits the live site and skips if the origin is unreachable |
 | `npm run build` | `clean && tsc -p tsconfig.build.json && node scripts/postbuild.mjs` | The postbuild step chmods the `bin` targets |
+| `node scripts/smoke.mjs` | starts the built server and checks the MCP handshake | Run after a `bin`, build or `engines` change; it is what proves the Node floor |
 | `npm run deploy` | `verify` then `npm publish` | Never run it yourself — see hard rules |
 
 Single test: `npx vitest run test/rsc.test.ts`. Single case:

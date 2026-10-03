@@ -48,8 +48,51 @@ be one.** Never run `npm publish`, never create or push a `v*` tag, and never ru
 for a tag name. **Decline the tag.** The correct agent ending is: bump `version`
 by hand, `npm run verify`, commit, report that it is ready to release, stop.
 
-CI runs on `ubuntu-latest` with Node 24; `.nvmrc` says 22; `engines` requires
-`>=20.11`. All three are consistent for what this code needs.
+## Node versions
+
+Two floors, and they mean different things:
+
+- **`engines.node: ">=22.12"` is a support policy**, not a technical limit. The
+  compiled server genuinely runs on Node 20.11 — verified by handshake, live
+  HTTPS fetch and RSC extraction — because the runtime uses only `fetch` and
+  `AbortSignal.timeout`, and the SDK only requires `>=18`. The floor is 22.12
+  because **Node 20 reached end-of-life on 2026-04-30** and shipping a runtime
+  floor that names an unpatched Node is a worse promise than a slightly higher
+  one.
+- **`.nvmrc` pins `22.23.2`** — the patch, not the float. Both `engines` and the
+  toolchain (Vitest 5 requires `^22.12.0 || ^24 || >=26`) need `>=22.12`, and a
+  floating `22` can resolve to 22.11, where Vitest 5 will not start.
+
+Raise the floor only with a reason, and never because a devDependency asks for
+more: `engines` is a promise to whoever installs the package, and the toolchain
+is not part of that promise.
+
+## CI
+
+`.github/workflows/ci.yml` runs on pushes to `main` and on pull requests, in two
+jobs:
+
+- **`verify`** — Node from `.nvmrc`: `npm ci`, `npm run verify`, then
+  `node scripts/smoke.mjs`. Uploads `dist/`.
+- **`runtime-floor`** — Node **22.12.0**, the lowest version satisfying
+  `engines`. Downloads only `dist/`, installs runtime dependencies with
+  `--omit=dev`, and re-runs the smoke test.
+
+Building once on a modern Node and testing the artifact on the floor is what
+keeps a declared floor honest: a single-version matrix would leave `engines` as
+an unchecked assertion. `scripts/smoke.mjs` performs the MCP `initialize`
+handshake and asserts the server advertises both `tools` and `resources`; it is
+deliberately offline, because live behaviour belongs to `test/e2e.test.ts`. It
+does **not** police the running Node version — that is `engines`' job, and
+duplicating it would create a second source of truth to drift.
+
+`publish.yml` is tag-triggered and builds with the same `.nvmrc` version, so a
+release and CI verify produce the artifact on one Node.
+
+Regenerate `package-lock.json` whenever dependencies change. It was once stale —
+recording the root package as unscoped at `0.1.0` — which `npm ci` tolerates
+(it validates dependencies, not the root name and version) but that hides real
+version drift. It was rewritten when Vitest moved to 5.
 
 ## Origins and network policy
 
@@ -106,11 +149,6 @@ the repo root; the version suite deletes it and fails if it reappears.
   in memory only. A long-lived server that restarts pays one sitemap fetch per
   process; persisting it to disk was considered and deferred as not worth the
   extra state.
-- `package-lock.json` is stale: it records the root package as unscoped
-  `refero-design-mcp` at `0.1.0`, while `package.json` says
-  `@darcas/refero-design-mcp` at `1.0.2`. It does not block a release — `npm ci`
-  validates dependencies, not the root name or version — but regenerate it when
-  the dependency set changes anyway.
 - `.editorconfig` and the code disagree on indentation, bracket spacing, import
   member order and line length. See `docs/agents/conventions.md`; pick a
   direction deliberately rather than reformatting in passing.

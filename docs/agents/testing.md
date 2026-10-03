@@ -1,7 +1,15 @@
 # Testing
 
-Vitest, 7 files, 74 tests. No test framework config file — `npm test` is
-`vitest run` with defaults.
+Vitest 5, 7 files, 74 tests. No test framework config file — `npm test` is
+`vitest run` with defaults, and the API surface is only `describe`, `it`,
+`expect`, `beforeAll` and `afterAll`: no mocks, spies, fake timers or snapshots.
+
+Vitest 4 removed `test(name, fn, options)` when `options` is an object. The
+numeric third argument (`it(name, fn, 90_000)`) is a different, still-supported
+form and is what this repository uses — verified against 5.0.3, which throws a
+`TypeError` for the object form and honours the numeric one with no deprecation
+warning. Do not "modernise" those call sites on the assumption that they are
+legacy.
 
 ## Commands
 
@@ -92,3 +100,23 @@ suites cast fixture JSON. Do not extend that exemption.
 | `version.ts`, `config.ts`, `cli.ts`, module graph | `npm test` — the version suite compiles and spawns |
 | A new tool or resource | `npx vitest run test/e2e.test.ts` plus a name in its assertion list |
 | Cache or fetch behaviour | `npx vitest run test/e2e.test.ts`; a warm local cache can mask changes |
+| Packaging, `bin`, or the Node floor | `npm run build && node scripts/smoke.mjs` |
+
+## The smoke test
+
+`scripts/smoke.mjs` spawns the compiled `dist/cli.js`, performs the MCP
+`initialize` handshake, and asserts the server reports its name and version and
+advertises both `tools` and `resources`. It is what proves `engines.node` on a
+machine other than the developer's — CI runs it on the declared floor. It is
+offline by design: the question it answers is "does this Node load the artifact",
+not "is the origin up".
+
+Run it after any `bin`, build or `engines` change, and locally before claiming
+the package works somewhere new:
+
+```bash
+npm run build && node scripts/smoke.mjs
+```
+
+It does not check the running Node version. That is `engines`' job, and
+enforcing it twice would create a second source of truth to drift.

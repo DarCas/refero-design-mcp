@@ -1,0 +1,73 @@
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+
+permissions:
+    contents: read
+
+jobs:
+    verify:
+        runs-on: ubuntu-latest
+
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@v6
+
+            # The version this repository declares in `.nvmrc`: typecheck, lint,
+            # test and build all have to pass on it.
+            -   name: Setup Node.js
+                uses: actions/setup-node@v6
+                with:
+                    node-version-file: '.nvmrc'
+                    cache: npm
+
+            -   name: Install dependencies
+                run: npm ci
+
+            -   name: Verify (typecheck, lint, test, build)
+                run: npm run verify
+
+            -   name: Smoke test the built server
+                run: node scripts/smoke.mjs
+
+            -   name: Upload build output
+                uses: actions/upload-artifact@v4
+                with:
+                    name: dist
+                    path: dist
+                    retention-days: 1
+
+    # `engines.node` is a promise to consumers, and the job above runs a single
+    # Node version. This one runs the artifact on the *declared floor*, so the
+    # promise is tested rather than asserted. Building happens once, on the
+    # declared version, and only `dist/` crosses over — which is what keeps a low
+    # runtime floor compatible with a modern toolchain.
+    runtime-floor:
+        needs: verify
+        runs-on: ubuntu-latest
+
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@v6
+
+            # The lowest version satisfying `engines.node` in package.json.
+            -   name: Setup Node.js
+                uses: actions/setup-node@v6
+                with:
+                    node-version: '22.12.0'
+                    cache: npm
+
+            -   name: Download build output
+                uses: actions/download-artifact@v4
+                with:
+                    name: dist
+                    path: dist
+
+            -   name: Install runtime dependencies only
+                run: npm ci --omit=dev
+
+            -   name: Smoke test on the minimum supported Node
+                run: node scripts/smoke.mjs
