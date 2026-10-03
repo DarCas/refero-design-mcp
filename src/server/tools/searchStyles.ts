@@ -19,7 +19,7 @@ import {
     type ExpandReport,
     type ToolDeps,
     type ToolText,
-} from './shared.js'
+} from './@shared.js'
 
 const DEFAULT_EXPAND = 25
 const DEFAULT_LIMIT = 5

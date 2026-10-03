@@ -9,7 +9,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import { reportStyleError, validateStyleId } from './errors.js'
-import { text, TOOL_ANNOTATIONS, type ToolDeps, type ToolText } from './shared.js'
+import { text, TOOL_ANNOTATIONS, type ToolDeps, type ToolText } from './@shared.js'
 
 export function registerGetStyle(server: McpServer, deps: ToolDeps): void {
     server.registerTool(
@@ -21,8 +21,11 @@ export function registerGetStyle(server: McpServer, deps: ToolDeps): void {
                     .boolean()
                     .optional()
                     .describe('Include the raw extracted token measurements (default true).'),
-                refresh: z.boolean().optional().describe('Bypass the local cache and refetch (conditional request).'),
-                style_id: z.string().describe('Style UUID.'),
+                refresh: z.boolean()
+                    .optional()
+                    .describe('Bypass the local cache and refetch (conditional request).'),
+                style_id: z.string()
+                    .describe('Style UUID.'),
             },
             title: 'Get a style as structured data',
             annotations: TOOL_ANNOTATIONS,

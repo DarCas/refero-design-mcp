@@ -20,6 +20,13 @@ and are invisible in the schema source:
 recommendation; switching is cosmetic and was not done to keep the diff to the
 one behavioural change.
 
+Two v4 deprecations were cleaned up here. `.passthrough()` → `.loose()` — same
+return type, same semantics, 18 call sites. `z.string().uuid()` → `z.uuid()`.
+Neither changed the JSON Schema the server exposes over the protocol, verified
+by diffing the schema dump before and after. Deprecated *and used*: `TypeOf`,
+`Infer` and `ZodIssueCode` from the compat layer, and the `.string().email()` /
+`.string().url()` method forms — none of which appear in `src/`.
+
 ## Where the data comes from
 
 `styles.refero.design` publishes style pages as Next.js App Router documents.
@@ -61,7 +68,7 @@ this file, this file is right. Two rules explain the whole schema style:
   expected, and whole sub-objects change shape between sites. A partial document
   must degrade, not throw away an entire design system. That is why nearly every
   field is `.optional()`, `.nullish()` or `.default(…)`, and why the objects are
-  `.passthrough()`.
+  `.loose()`.
 - **The `measurement` helper normalizes at the boundary.** Every numeric-looking
   field passes through `string | number` → trimmed string, with `''` collapsed to
   `undefined`. A `typeScale` size is `"16px"` on one style and `16` on the next;

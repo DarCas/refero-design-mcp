@@ -7,7 +7,7 @@
 /** `refero_index_status` — honest reporting of local index coverage. */
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { errorText, text, TOOL_ANNOTATIONS, type ToolDeps, type ToolText } from './shared.js'
+import { errorText, text, TOOL_ANNOTATIONS, type ToolDeps, type ToolText } from './@shared.js'
 
 export function registerIndexStatus(server: McpServer, deps: ToolDeps): void {
     server.registerTool(

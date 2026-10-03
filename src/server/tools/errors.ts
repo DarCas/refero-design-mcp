@@ -14,7 +14,7 @@
 
 import { Store } from '../../index/store.js'
 import { isStyleId } from '../../types.js'
-import { errorText, type ToolText } from './shared.js'
+import { errorText, type ToolText } from './@shared.js'
 
 /**
  * Reject a malformed style id before it costs a request.

@@ -6,7 +6,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { containsTerm, scoreStyle, tokenize } from '../src/core/scoring.js'
-import { rankSummaries } from '../src/server/tools/shared.js'
+import { rankSummaries } from '../src/server/tools/@shared.js'
 import { styleSummarySchema } from '../src/types.js'
 
 const style = {

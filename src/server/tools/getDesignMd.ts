@@ -11,7 +11,7 @@ import { z } from 'zod'
 import { buildDesignMd } from '../../core/designMd.js'
 import { sectionSchema, SECTIONS, type Section } from '../../types.js'
 import { reportStyleError, validateStyleId } from './errors.js'
-import { charBudget, text, TOOL_ANNOTATIONS, type ToolDeps, type ToolText } from './shared.js'
+import { charBudget, text, TOOL_ANNOTATIONS, type ToolDeps, type ToolText } from './@shared.js'
 
 export function registerGetDesignMd(server: McpServer, deps: ToolDeps): void {
     server.registerTool(
@@ -19,12 +19,15 @@ export function registerGetDesignMd(server: McpServer, deps: ToolDeps): void {
         {
             description: 'Render a style as a design.md document. The `sections` argument is honoured: request only the sections you need to stay within budget. Without it you get the whole document, truncated on a structural boundary.',
             inputSchema: {
-                refresh: z.boolean().optional().describe('Bypass the local cache and refetch (conditional request).'),
+                refresh: z.boolean()
+                    .optional()
+                    .describe('Bypass the local cache and refetch (conditional request).'),
                 sections: z
                     .array(sectionSchema)
                     .optional()
                     .describe(`Which sections to include, in any order: ${SECTIONS.join(', ')}. Omit for everything.`),
-                style_id: z.string().describe('Style UUID, e.g. "a73148b9-449b-42cd-9f38-86ef694f500e".'),
+                style_id: z.string()
+                    .describe('Style UUID, e.g. "a73148b9-449b-42cd-9f38-86ef694f500e".'),
             },
             title: 'Get design.md for a style',
             annotations: TOOL_ANNOTATIONS,

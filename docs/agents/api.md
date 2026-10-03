@@ -30,7 +30,7 @@ returns an error naming `refero_list_style_ids` as the recovery step.
 
 ### Behavioural hints
 
-Every tool carries all four MCP hints, from `TOOL_ANNOTATIONS` in `shared.ts`:
+Every tool carries all four MCP hints, from `TOOL_ANNOTATIONS` in `@shared.ts`:
 `readOnlyHint: true`, `destructiveHint: false`, `idempotentHint: true`,
 `openWorldHint: true`. They are shared rather than repeated so the six
 declarations cannot drift, and `test/e2e.test.ts` asserts all four on every tool
@@ -76,7 +76,7 @@ still a conditional request when validators exist.
   `ExpandReport` (`requested`, `indexed`, `failed`) and `describeExpand()`
   phrases it. A model told "indexed 25" when nine fetches failed will conclude
   the rest of the catalogue is absent.
-- **Rank through `rankSummaries()`.** It lives in `shared.ts` next to the
+- **Rank through `rankSummaries()`.** It lives in `@shared.ts` next to the
   scorer, so search and match cannot drift apart. A score of 0 means no literal
   and no mood-facet hit, and is dropped rather than ranked last.
 - **Degrade, do not invent.** An empty search says how many of how many were

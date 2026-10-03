@@ -8,8 +8,7 @@ import { z } from 'zod'
 
 /** A style as advertised by the sitemap: identity plus freshness signal. */
 export const sitemapEntrySchema = z.object({
-    id: z.string()
-        .uuid(),
+    id: z.uuid(),
     lastmod: z.string()
         .optional(),
 })
@@ -75,7 +74,7 @@ export const designSystemSchema = z
                 role: z.string().optional(),
                 group: z.string().optional(),
             })
-                .passthrough(),
+                .loose(),
         )
             .default([]),
         components: z.array(
@@ -85,7 +84,7 @@ export const designSystemSchema = z
                 css: z.string().optional(),
                 description: z.string().optional(),
             })
-                .passthrough(),
+                .loose(),
         )
             .default([]),
         customSections: z.array(
@@ -95,7 +94,7 @@ export const designSystemSchema = z
                 // inline content; the renderer detects and skips those.
                 content: z.string().default(''),
             })
-                .passthrough(),
+                .loose(),
         )
             .default([]),
         description: z.string()
@@ -120,7 +119,7 @@ export const designSystemSchema = z
                 z.object({
                     business: z.string().optional(),
                     why: z.string().optional(),
-                }).passthrough(),
+                }).loose(),
             ]),
         )
             .default([]),
@@ -132,7 +131,7 @@ export const designSystemSchema = z
             cardPadding: nullableMeasurement,
             pageMaxWidth: nullableMeasurement,
         })
-            .passthrough()
+            .loose()
             .optional(),
         surfaces: z.array(
             z.object({
@@ -141,7 +140,7 @@ export const designSystemSchema = z
                 level: z.union([z.string(), z.number()]).optional(),
                 purpose: z.string().optional(),
             })
-                .passthrough(),
+                .loose(),
         )
             .default([]),
         theme: z.string()
@@ -156,7 +155,7 @@ export const designSystemSchema = z
                 lineHeight: optionalMeasurement,
                 letterSpacing: optionalMeasurement,
             })
-                .passthrough(),
+                .loose(),
         )
             .default([]),
         typography: z.array(
@@ -169,11 +168,11 @@ export const designSystemSchema = z
                 letterSpacing: nullableMeasurement,
                 substitute: z.string().optional(),
             })
-                .passthrough(),
+                .loose(),
         )
             .default([]),
     })
-    .passthrough()
+    .loose()
 
 export type DesignSystem = z.infer<typeof designSystemSchema>
 
@@ -191,11 +190,11 @@ export const rawTokensSchema = z.object({
                 frequency: z.number().default(0),
                 properties: z.array(z.string()).default([]),
             })
-                .passthrough(),
+                .loose(),
         )
             .default([]),
     })
-        .passthrough()
+        .loose()
         .optional(),
     gradients: z.array(z.unknown())
         .default([]),
@@ -206,11 +205,11 @@ export const rawTokensSchema = z.object({
                 contexts: z.array(z.string()).default([]),
                 frequency: z.number().default(0),
             })
-                .passthrough(),
+                .loose(),
         )
             .default([]),
     })
-        .passthrough()
+        .loose()
         .optional(),
     spacing: z.object({
         tokens: z.array(
@@ -220,11 +219,11 @@ export const rawTokensSchema = z.object({
                 frequency: z.number().default(0),
                 properties: z.array(z.string()).default([]),
             })
-                .passthrough(),
+                .loose(),
         )
             .default([]),
     })
-        .passthrough()
+        .loose()
         .optional(),
     typography: z.object({
         fonts: z.array(
@@ -234,14 +233,14 @@ export const rawTokensSchema = z.object({
                 weights: z.array(measurement).default([]),
                 frequency: z.number().default(0),
             })
-                .passthrough(),
+                .loose(),
         )
             .default([]),
     })
-        .passthrough()
+        .loose()
         .optional(),
 })
-    .passthrough()
+    .loose()
 
 export type RawTokens = z.infer<typeof rawTokensSchema>
 

@@ -19,7 +19,7 @@ import {
     TOOL_ANNOTATIONS,
     type ToolDeps,
     type ToolText,
-} from './shared.js'
+} from './@shared.js'
 import type { ExpandIndex } from './searchStyles.js'
 
 const DEFAULT_EXPAND = 50

@@ -8,7 +8,7 @@
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
-import { defaultLimit, errorText, text, TOOL_ANNOTATIONS, type ToolDeps, type ToolText } from './shared.js'
+import { defaultLimit, errorText, text, TOOL_ANNOTATIONS, type ToolDeps, type ToolText } from './@shared.js'
 
 const DEFAULT_LIMIT = 50
 /** Must match the `limit` maximum in the schema below. */
@@ -20,9 +20,20 @@ export function registerListStyleIds(server: McpServer, deps: ToolDeps): void {
         {
             description: 'Return published style UUIDs and their last-modified timestamps, straight from the public sitemap. Use this to discover ids without reading any style page.',
             inputSchema: {
-                limit: z.number().int().positive().max(200).optional().describe(`How many ids to return (default ${DEFAULT_LIMIT}).`),
-                offset: z.number().int().min(0).optional().describe('Zero-based index into the published list (default 0).'),
-                updated_since: z.string().optional().describe('ISO date; return only styles modified after this date.'),
+                limit: z.number()
+                    .int()
+                    .positive()
+                    .max(200)
+                    .optional()
+                    .describe(`How many ids to return (default ${DEFAULT_LIMIT}).`),
+                offset: z.number()
+                    .int()
+                    .min(0)
+                    .optional()
+                    .describe('Zero-based index into the published list (default 0).'),
+                updated_since: z.string()
+                    .optional()
+                    .describe('ISO date; return only styles modified after this date.'),
             },
             title: 'List style ids from the sitemap',
             annotations: TOOL_ANNOTATIONS,

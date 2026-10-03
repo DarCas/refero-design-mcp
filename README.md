@@ -1,18 +1,16 @@
-# refero-design-mcp [![M8ven Score](https://m8ven.ai/badge/mcp/darcas-refero-design-mcp-1077wk)](https://m8ven.ai/mcp/darcas-refero-design-mcp-1077wk?s=readme)
+# refero-design-mcp 
+[![M8ven Score](https://m8ven.ai/badge/mcp/darcas-refero-design-mcp-1077wk)](https://m8ven.ai/mcp/darcas-refero-design-mcp-1077wk?s=readme)
+[![Buy me a coffee](https://img.shields.io/badge/buy_me_a_coffee-%E2%9D%A4%EF%B8%8F-FEEBE7?&labelColor=FF0000)](https://www.paypal.com/donate/?hosted_button_id=YZQDE3TEYDBWA)
 
+> The underlying data belongs to Refero Design. This is an unofficial client; no
+affiliation or endorsement is implied.
+ 
 ![Node.js](https://img.shields.io/badge/node.js-%3E%3D22.12-5FA04E?logo=nodedotjs&logoColor=white&style=for-the-badge)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge)](https://www.typescriptlang.org)
 [![Tests](https://img.shields.io/badge/tests-74%20passing-brightgreen?style=for-the-badge)](#testing)
 
 ![npm](https://img.shields.io/npm/v/@darcas/refero-design-mcp?style=for-the-badge)
 ![NPM Downloads](https://img.shields.io/npm/dy/%40darcas%2Frefero-design-mcp?style=for-the-badge)
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
-
-[![Buy me a coffee](https://img.shields.io/badge/buy_me_a_coffee-%E2%9D%A4%EF%B8%8F-FEEBE7?style=for-the-badge&labelColor=FF0000)](https://www.paypal.com/donate/?hosted_button_id=YZQDE3TEYDBWA)
-
-> The underlying data belongs to Refero Design. This is an unofficial client; no
-affiliation or endorsement is implied.
 
 An [MCP](https://modelcontextprotocol.io) server for discovering, searching and
 extracting design systems from the public pages of
@@ -127,6 +125,10 @@ npm install -g @darcas/refero-design-mcp
 
 Installs the `refero-design-mcp` command — the binary name stays unscoped, so
 client configs stay short.
+
+**Requires Node ≥ 22.12.** Node 20 reached end-of-life on 2026-04-30, so 1.1.0
+drops it; npm reports `EBADENGINE` on an older runtime. Everything else about
+installing and running is unchanged.
 
 ### Configuration
 

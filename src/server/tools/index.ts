@@ -27,9 +27,9 @@ import { registerIndexStatus } from './indexStatus.js'
 import { registerListStyleIds } from './listStyleIds.js'
 import { registerMatchStyle } from './matchStyle.js'
 import { registerSearchStyles, type ExpandIndex } from './searchStyles.js'
-import type { ExpandReport, ToolDeps } from './shared.js'
+import type { ExpandReport, ToolDeps } from './@shared.js'
 
-export type { ExpandReport, ToolDeps, ToolText } from './shared.js'
+export type { ExpandReport, ToolDeps, ToolText } from './@shared.js'
 
 /**
  * Pull uncached styles into the local index.
