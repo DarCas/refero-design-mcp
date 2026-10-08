@@ -36,6 +36,8 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Stats } from 'node:fs'
 
+import { VERSION } from '../version.js'
+
 // ── manifest ─────────────────────────────────────────────────────────────────
 
 export type Scope = 'global' | 'project'
@@ -153,12 +155,20 @@ export class CliError extends Error {
  * Parsed rather than imported: the file lives outside `rootDir`, so a static
  * import would drag it into the build output and defeat the point of shipping
  * the manifest as data.
+ *
+ * `skillVersion` is derived, not read. The skill ships inside this package's
+ * tarball, so there is no release in which one moves without the other, and a
+ * second literal could only duplicate the package version or claim an
+ * independence that does not exist. Deriving it also binds the installed skill
+ * to the tool surface it shipped with, so an MCP release that changes a tool
+ * the skill calls is reported as out of date rather than silently mismatched.
  */
-export function loadManifest(skillDir: string): SkillManifest {
+export function loadManifest(skillDir: string, version: string = VERSION): SkillManifest {
     const manifestPath = join(skillDir, 'clients.json')
 
     try {
-        return JSON.parse(readFileSync(manifestPath, 'utf8')) as SkillManifest
+        const parsed = JSON.parse(readFileSync(manifestPath, 'utf8')) as Omit<SkillManifest, 'skillVersion'>
+        return { ...parsed, skillVersion: version }
     } catch (error) {
         throw new CliError(
             `Cannot read ${manifestPath}: ${( error as Error ).message}`,
@@ -503,8 +513,9 @@ function applyCopy(plan: Plan, target: Target, options: ApplyOptions): Outcome {
         // difference at the *same* version is somebody's local edit.
         if (marker !== null && !outdated && !options.force) {
             throw new CliError(
-                `${target.dir} has local changes to ${plan.skillVersion}.`,
-                'Review them, then re-run with --force to overwrite. --dry-run prints the diff without writing.',
+                `${target.dir} differs from this package's copy of ${plan.skillName}.`,
+                'Either this package changed after the skill was installed, or the installed copy '
+                    + 'was edited by hand. Re-run with --force to sync; --dry-run prints the diff first.',
             )
         }
 
@@ -512,7 +523,20 @@ function applyCopy(plan: Plan, target: Target, options: ApplyOptions): Outcome {
 
         if (options.dryRun) return marker !== null && outdated ? 'outdated' : 'installed'
 
-        rmSync(dir, {force: true, recursive: true})
+        if (marker === null) {
+            // A directory we do not own, replaced on an explicit --force. Removed
+            // outright: its contents are unknown, and leaving them behind would
+            // interleave somebody else's files with the skill.
+            rmSync(dir, {force: true, recursive: true})
+        } else {
+            // Our own copy, refreshed in place. Removing the directory would take
+            // its inode with it, and an agent watching that path sees the skill
+            // disappear and stop advertising it — observed on a live session
+            // after a `--force` refresh. Removing only the files the source no
+            // longer has keeps the directory itself stable, which `copyTree` then
+            // overwrites in place.
+            for (const name of diff.removed) rmSync(join(dir, name), { force: true })
+        }
     }
 
     if (options.dryRun) return 'installed'
@@ -758,6 +782,12 @@ export interface CliDeps {
     err: (text: string) => void
     out: (text: string) => void
     skillDir: string
+    /**
+     * The release the skill is installed from, which the manifest inherits.
+     * Injectable rather than read from `VERSION` at the call site so a test can
+     * simulate an upgrade without editing a manifest that must not hold one.
+     */
+    version?: string
 }
 
 const USAGE = [
@@ -889,10 +919,10 @@ export function runCli(argv: string[], deps: CliDeps): number {
             return 0
         }
 
-        const manifest = loadManifest(deps.skillDir)
+        const manifest = loadManifest(deps.skillDir, deps.version)
 
         if (args.command === 'version') {
-            out(`${manifest.skillName} ${manifest.skillVersion} — skill for the Refero Design MCP\n`)
+            out(`${manifest.skillName} — from refero-design-mcp ${manifest.skillVersion}\n`)
             return 0
         }
 

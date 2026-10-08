@@ -20,7 +20,7 @@ npm start          # node dist/cli.js, after a build
 | --- | --- | --- |
 | `npm run typecheck` | `tsc --noEmit` | Covers `src/` **and** `test/` |
 | `npm run lint` | `eslint src test` | Type-aware. Use `--fix`; never hand-fix the semicolon rule |
-| `npm test` | `vitest run` | 74 tests / 7 files. The e2e suite hits the live site and skips if the origin is unreachable |
+| `npm test` | `vitest run` | 116 tests / 9 files. The e2e suite hits the live site and skips if the origin is unreachable |
 | `npm run build` | `clean && tsc -p tsconfig.build.json && node scripts/postbuild.mjs` | The postbuild step chmods the `bin` targets |
 | `node scripts/smoke.mjs` | starts the built server and checks the MCP handshake | Run after a `bin`, build or `engines` change; it is what proves the Node floor |
 | `npm run deploy` | `verify` then `npm publish` | Never run it yourself — see hard rules |
@@ -56,6 +56,10 @@ Single test: `npx vitest run test/rsc.test.ts`. Single case:
   palette with no error.
 - **Report coverage in every search result.** A miss over a partial local index is
   not evidence a style does not exist.
+- **`skillVersion` is derived, never stored.** The installer takes it from
+  `VERSION` (`src/version.ts`); `clients.json` must not declare one. The skill
+  ships in the same tarball as the server, so a second literal can only drift.
+  `tests/validate.mjs` fails the build if the field comes back.
 - **Do not let an "offline" test touch the network,** and never write a test that
   cannot fail. Unit suites use the RSC fixture in `test/rsc.test.ts`.
 - **Do not reformat code you are not otherwise changing.** The indentation,
@@ -92,8 +96,10 @@ src/index/store.ts      disk cache, lazy indexing, in-flight dedup
 src/server/             what the protocol exposes
   tools/                one module per tool, named after the tool
   resources/            the refero:// style design.md resource
+src/skill/install.ts    the refero-design-skill installer CLI; node:fs/os/path/url only, never http/config
 scripts/postbuild.mjs   chmods the bin targets after tsc
-test/                   offline unit suites + one live e2e suite
+test/                   offline unit suites + one live e2e suite, plus the installer suites
+skill/                  the refero-design-research Agent Skill; validate.mjs is plain Node, not TS
 dist/                   build output, gitignored, never edit
 ```
 

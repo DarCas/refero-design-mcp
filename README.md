@@ -7,7 +7,7 @@ affiliation or endorsement is implied.
  
 ![Node.js](https://img.shields.io/badge/node.js-%3E%3D22.12-5FA04E?logo=nodedotjs&logoColor=white&style=for-the-badge)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge)](https://www.typescriptlang.org)
-[![Tests](https://img.shields.io/badge/tests-74%20passing-brightgreen?style=for-the-badge)](#testing)
+[![Tests](https://img.shields.io/badge/tests-116%20passing-brightgreen?style=for-the-badge)](#testing)
 
 ![npm](https://img.shields.io/npm/v/@darcas/refero-design-mcp?style=for-the-badge)
 ![NPM Downloads](https://img.shields.io/npm/dy/%40darcas%2Frefero-design-mcp?style=for-the-badge)
@@ -18,6 +18,10 @@ extracting design systems from the public pages of
 
 Give an assistant a real design system — palette, type scale, spacing, surfaces,
 do/don't guidance — instead of one it invented.
+
+> The package also ships an **Agent Skill**, `refero-design-research`, that teaches
+a coding agent to do evidence-based design research with this server before
+implementing UI — see [The skill](#the-skill).
 
 ---
 
@@ -298,7 +302,7 @@ npm run verify     # typecheck + lint + test + build
 
 ## Testing
 
-74 tests across 7 files.
+116 tests across 9 files.
 
 Unit tests run **offline**, against a hand-assembled sample of a real RSC
 payload — the fragile parts (id anchoring, brace matching, lazy reference

@@ -13,11 +13,12 @@
  * which is how the Windows junction branch is reachable from Linux.
  */
 
-import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, realpathSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { runCli, type CliDeps } from '../src/skill/install.js'
+import { loadManifest, runCli, type CliDeps } from '../src/skill/install.js'
+import { VERSION } from '../src/version.js'
 
 interface Harness {
     deps: CliDeps
@@ -31,6 +32,14 @@ let out: string
 let err: string
 
 const SKILL_NAME = 'refero-design-research'
+
+/**
+ * Stand-in for the release the skill ships in.
+ *
+ * The installer derives this from the package version at runtime, so a test
+ * that hardcoded the real one would fail on every release for no reason.
+ */
+const SKILL_VERSION = '1.0.0'
 
 function run(argv: string[]): number {
     out = ''
@@ -70,12 +79,16 @@ function copySkill(home: string): string {
     return target
 }
 
+/**
+ * Simulate running a different release of the package.
+ *
+ * The version is derived, not stored in `clients.json`, so it is injected
+ * through the same seam the real entry point uses. A test cannot bump it by
+ * editing the manifest — that field no longer exists, and the validator fails
+ * the build if it comes back.
+ */
 function setSkillVersion(version: string): void {
-    const manifestPath = join(harness.skillDir, 'clients.json')
-    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { skillVersion: string }
-
-    manifest.skillVersion = version
-    writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8')
+    harness.deps.version = version
 }
 
 let root: string
@@ -99,6 +112,8 @@ beforeEach(() => {
             err: () => undefined,
             out: () => undefined,
             skillDir,
+            // Pinned so assertions do not move when the package is released.
+            version: SKILL_VERSION,
         },
         home,
         project,
@@ -127,7 +142,7 @@ describe('a fresh install', () => {
 
         expect(marker.skill).toBe(SKILL_NAME)
         expect(marker.mode).toBe('copy')
-        expect(marker.skillVersion).toBe('1.0.0')
+        expect(marker.skillVersion).toBe(SKILL_VERSION)
         expect(marker.path).toBe(sharedDir())
         expect(typeof marker.installedAt).toBe('string')
     })
@@ -159,7 +174,7 @@ describe('idempotence and versioning', () => {
         expect(out).not.toContain('Restart the agent session')
     })
 
-    it('refreshes when skillVersion is bumped', () => {
+    it('refreshes when the package version moves on', () => {
         run([ 'install' ])
         setSkillVersion('1.1.0')
 
@@ -169,12 +184,28 @@ describe('idempotence and versioning', () => {
         expect(out).toContain('installed')
     })
 
+    it('takes the version from the package, not from clients.json', () => {
+        // The manifest cannot hold one. If it ever does, this pins the bug
+        // rather than the behaviour: two numbers ship disagreeing.
+        const manifest = JSON.parse(readFileSync(join(harness.skillDir, 'clients.json'), 'utf8')) as Record<string, unknown>
+
+        expect(manifest.skillVersion).toBeUndefined()
+        expect(loadManifest(harness.skillDir, '9.9.9').skillVersion).toBe('9.9.9')
+        // The default is the real release, resolved the same way the server
+        // reports its own version — so the skill can never claim a number the
+        // package did not ship.
+        expect(loadManifest(harness.skillDir).skillVersion).toBe(VERSION)
+    })
+
     it('treats a changed tree at the same version as a local edit', () => {
         run([ 'install' ])
         writeFileSync(join(sharedDir(), 'SKILL.md'), 'hand-edited\n', 'utf8')
 
         expect(run([ 'install' ])).toBe(1)
-        expect(err).toContain('local changes')
+        // Names both causes: a changed package and a hand-edited copy look the
+        // same from here, and only one of them is the user's doing.
+        expect(err).toContain(`differs from this package's copy of ${SKILL_NAME}`)
+        expect(err).toContain('edited by hand')
         expect(readFileSync(join(sharedDir(), 'SKILL.md'), 'utf8')).toBe('hand-edited\n')
     })
 })
@@ -284,6 +315,24 @@ describe('refusing to clobber', () => {
         expect(err).toContain('was not installed by refero-design-skill')
         expect(err).toContain('--force')
         expect(readFileSync(join(foreign, 'SKILL.md'), 'utf8')).toBe('mine\n')
+    })
+
+    it('refreshes in place, keeping the directory inode stable', () => {
+        // An agent watching the skills path drops the skill when the directory
+        // vanishes and is recreated, and does not always pick it back up. That
+        // was observed on a live session after a --force refresh, so the refresh
+        // path must overwrite rather than delete-then-copy.
+        run([ 'install', '--client', 'codex' ])
+        const before = statSync(sharedDir())
+
+        writeFileSync(join(sharedDir(), 'SKILL.md'), 'hand-edited\n', 'utf8')
+        writeFileSync(join(sharedDir(), 'stale.md'), 'gone next run\n', 'utf8')
+
+        expect(run([ 'install', '--client', 'codex', '--force' ])).toBe(0)
+
+        expect(statSync(sharedDir()).ino).toBe(before.ino)
+        expect(existsSync(join(sharedDir(), 'stale.md'))).toBe(false)
+        expect(readFileSync(join(sharedDir(), 'SKILL.md'), 'utf8')).not.toBe('hand-edited\n')
     })
 
     it('replaces a marker-less copy with --force, after printing the diff', () => {
@@ -440,7 +489,7 @@ describe('list', () => {
     it('reports detected clients and what is installed where', () => {
         expect(run([ 'list' ])).toBe(0)
 
-        expect(out).toContain('refero-design-research 1.0.0')
+        expect(out).toContain(`${SKILL_NAME} ${SKILL_VERSION}`)
         expect(out).toContain('claude — Claude Code [verified] detected')
         expect(out).toContain('cursor — Cursor [verified] not detected')
         expect(out).toContain('not installed')
@@ -451,7 +500,7 @@ describe('list', () => {
         setSkillVersion('2.0.0')
 
         expect(run([ 'list' ])).toBe(0)
-        expect(out).toContain('1.0.0 OUTDATED')
+        expect(out).toContain(`${SKILL_VERSION} OUTDATED`)
     })
 
     it('writes nothing', () => {
@@ -465,9 +514,9 @@ describe('list', () => {
 })
 
 describe('argument handling', () => {
-    it('reports the skill version', () => {
+    it('reports the skill version and names the release it comes from', () => {
         expect(run([ '--version' ])).toBe(0)
-        expect(out).toContain(`${SKILL_NAME} 1.0.0`)
+        expect(out).toContain(`${SKILL_NAME} — from refero-design-mcp ${SKILL_VERSION}`)
     })
 
     it('prints usage for help and for an unknown command', () => {

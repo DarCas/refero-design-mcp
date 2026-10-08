@@ -45,14 +45,16 @@ skill/refero-design-research/
 ├── clients.json                 installer manifest (target directories)
 ├── references/
 │   ├── mcp-tools.md             generated from the MCP source
+│   ├── install-mcp.md           adding the MCP to each client, with consent
 │   ├── research-workflow.md     queries, comparison, the question bank
 │   ├── design-output.md         the output shape and the `design.md` skeleton
-│   └── defaults.md              fallback rules when evidence is missing
+│   ├── defaults.md              fallback rules when evidence is missing
+│   └── donation.md              the closing donation line, and its bounds
 ├── examples/
 │   └── design-direction.example.md   worked output, fully synthetic
 └── tests/
     ├── validate.mjs             static checks, offline, no dependencies
-    └── scenarios/               behavioural checklist (A–K)
+    └── scenarios/               behavioural checklist (A–M)
 ```
 
 `SKILL.md` is the only file an agent loads automatically. The rest are read on

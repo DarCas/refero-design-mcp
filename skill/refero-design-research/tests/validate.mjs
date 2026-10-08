@@ -112,10 +112,12 @@ check('SKILL.md compatibility is within 500 characters', () => {
 })
 
 check('SKILL.md declares a licence matching the package', () => {
-    const manifest = JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'))
-    return FRONTMATTER?.license === manifest.license
+    const pkg = manifest()
+    if (!pkg) return SKIP
+
+    return FRONTMATTER?.license === pkg.license
         ? null
-        : `frontmatter "${FRONTMATTER?.license}" vs package "${manifest.license}"`
+        : `frontmatter "${FRONTMATTER?.license}" vs package "${pkg.license}"`
 })
 
 check('SKILL.md description carries the activation keywords', () => {
@@ -234,21 +236,59 @@ check('every refero_* tool named in the skill is documented', () => {
 
 check('mcp-tools.md documents every tool the server registers', () => {
     const toolsDir = join(REPO_ROOT, 'src', 'server', 'tools')
-    const registered = new Set(
-        readdirSync(toolsDir, { withFileTypes: true })
-            .filter(entry => entry.isFile() && entry.name.endsWith('.ts'))
-            .map(entry => readFileSync(join(toolsDir, entry.name), 'utf8'))
-            .flatMap(source => [...source.matchAll(/'(refero_[a-z_]+)'/g)].map(match => match[1])),
-    )
+    let registered
+
+    try {
+        registered = new Set(
+            readdirSync(toolsDir, { withFileTypes: true })
+                .filter(entry => entry.isFile() && entry.name.endsWith('.ts'))
+                .map(entry => readFileSync(join(toolsDir, entry.name), 'utf8'))
+                .flatMap(source => [...source.matchAll(/'(refero_[a-z_]+)'/g)].map(match => match[1])),
+        )
+    } catch {
+        return SKIP
+    }
+
     const missing = [...registered].filter(name => !DOCUMENTED_TOOLS.has(name)).sort()
     return missing.length === 0 ? null : `server registers but the doc omits: ${missing.join(', ')}`
 })
 
-check('mcp-tools.md records the package version', () => {
-    const manifest = JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'))
-    return read('references/mcp-tools.md').includes(manifest.version)
-        ? null
-        : `no "Generated from refero-design-mcp @ ${manifest.version}" footer`
+// Every place mcp-tools.md states a version has to move together. Checking only
+// the footer left the header and the worked example free to drift, so a bump
+// could publish a document that names two different releases.
+const MCP_TOOLS_VERSION_SLOTS = [
+    ['header', /Generated from `src\/` at v(\S+?),/],
+    ['example', /\(server version (\S+?)\)/],
+    ['footer', /Generated from refero-design-mcp @ (\S+?),/],
+]
+
+check('mcp-tools.md records the package version in every slot', () => {
+    const pkg = manifest()
+    if (!pkg) return SKIP
+
+    const text = read('references/mcp-tools.md')
+    const wrong = []
+
+    for (const [slot, pattern] of MCP_TOOLS_VERSION_SLOTS) {
+        const found = pattern.exec(text)
+        if (!found) wrong.push(`${slot}: not found`)
+        else if (found[1] !== pkg.version) wrong.push(`${slot}: ${found[1]} vs ${pkg.version}`)
+    }
+
+    return wrong.length === 0 ? null : wrong.join('; ')
+})
+
+check('mcp-tools.md names no other version', () => {
+    const pkg = manifest()
+    if (!pkg) return SKIP
+
+    // Anything that looks like a release of this package, minus the ones the
+    // slots above account for. Catches a stale example nobody thought to edit.
+    const text = read('references/mcp-tools.md')
+    const found = [...new Set([...text.matchAll(/\bv?\d+\.\d+\.\d+\b/g)].map(m => m[0]))]
+    const allowed = new Set(MCP_TOOLS_VERSION_SLOTS.map(([, pattern]) => pkg.version))
+    const stray = found.filter(value => !allowed.has(value.replace(/^v/, '')))
+    return stray.length === 0 ? null : `also mentions: ${stray.join(', ')}`
 })
 
 check('the synthetic example is labelled as fictional', () => {
@@ -261,9 +301,14 @@ check('the synthetic example is labelled as fictional', () => {
 
 const CLIENTS = JSON.parse(read('clients.json'))
 
-check('clients.json declares a skill name and semver version', () => {
-    if (!CLIENTS.skillName) return 'no skillName'
-    return /^\d+\.\d+\.\d+$/.test(CLIENTS.skillVersion ?? '') ? null : `"${CLIENTS.skillVersion}" is not semver`
+check('clients.json declares a skill name', () => (CLIENTS.skillName ? null : 'no skillName'))
+
+check('clients.json holds no skill version of its own', () => {
+    // The installer derives it from the package version, because the skill and
+    // the server ship in one tarball and cannot be released apart. A literal
+    // here is the bug this check exists to prevent: two numbers that look
+    // independent, drift apart, and ship disagreeing inside the tarball.
+    return CLIENTS.skillVersion === undefined ? null : `declares skillVersion "${CLIENTS.skillVersion}"`
 })
 
 check('clients.json skillName matches the directory', () => {
@@ -374,10 +419,22 @@ check('SKILL.md encodes the absent-MCP flow', () => {
 const INSTALL_MCP = 'references/install-mcp.md'
 const HAS_INSTALL_MCP = ALL_FILES.includes(join(SKILL_ROOT, INSTALL_MCP))
 
-/** The repo manifest, or null when the skill is read outside the repository. */
+/**
+ * The repo manifest, or null when the skill is read outside the repository.
+ *
+ * Presence is not enough. An installed skill sits next to projects that have a
+ * `package.json` of their own — an `.opencode/` directory is exactly such a
+ * place, and it is where this skill lands when installed with `--scope project`.
+ * So the manifest has to actually look like this package before any
+ * repo-dependent check is allowed to assert anything.
+ */
 function manifest() {
     try {
-        return JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'))
+        const pkg = JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'))
+
+        return typeof pkg?.name === 'string' && typeof pkg?.version === 'string' && pkg?.bin
+            ? pkg
+            : null
     } catch {
         return null
     }
@@ -493,7 +550,14 @@ check('donation.md points at the same link as the root README', () => {
     if (!HAS_DONATION) return `no ${DONATION}`
     // One source of truth. Nothing else here would notice a divergent or dead
     // donation link, because the link resolver deliberately skips external URLs.
-    const readme = readFileSync(join(REPO_ROOT, 'README.md'), 'utf8')
+    let readme
+
+    try {
+        readme = readFileSync(join(REPO_ROOT, 'README.md'), 'utf8')
+    } catch {
+        return SKIP
+    }
+
     const canonical = /https?:\/\/[^\s)>"']*donate[^\s)>"']*/.exec(readme)?.[0]
 
     if (!canonical) return 'no donation link in the root README to compare against'

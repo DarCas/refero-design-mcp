@@ -81,6 +81,5 @@
     "global": "~/.agents/skills",
     "project": "./.agents/skills"
   },
-  "skillName": "refero-design-research",
-  "skillVersion": "1.0.0"
+  "skillName": "refero-design-research"
 }
