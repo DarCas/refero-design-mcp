@@ -7,7 +7,10 @@
 import { execFileSync, spawn } from 'node:child_process'
 import { existsSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
+import { Client } from '@modelcontextprotocol/sdk/client/index.js'
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { createServer } from '../src/server/index.js'
 import { VERSION } from '../src/version.js'
 
 const root = new URL('..', import.meta.url).pathname
@@ -94,7 +97,7 @@ describe('version resolution', () => {
         expect(VERSION).not.toBe('0.0.0-unknown')
     }, 30_000)
 
-    it('keeps the installed binary name free of the npm scope', () => {
+    it('keeps every installed binary name free of the npm scope', () => {
         const bin = JSON.parse(
             execFileSync(
                 'node',
@@ -106,8 +109,65 @@ describe('version resolution', () => {
         ) as Record<string, string>
 
         // Users and models type the command; the scope is packaging metadata.
-        expect(Object.keys(bin)).toEqual(['refero-design-mcp'])
+        // Asserted per key rather than against a list, so a second bin cannot
+        // smuggle a scope in and still pass.
+        for (const name of Object.keys(bin)) {
+            expect(name).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/)
+        }
+
+        expect(Object.keys(bin)).toContain('refero-design-mcp')
+        expect(Object.keys(bin)).toContain('refero-design-skill')
     }, 30_000)
+
+    it('advertises the skill and the binary that installs it, over the wire', async () => {
+        const bin = JSON.parse(
+            execFileSync(
+                'node',
+                ['-p', 'JSON.stringify(require("./package.json").bin)'],
+                {
+                    cwd: root,
+                    encoding: 'utf8',
+                }),
+        ) as Record<string, string>
+
+        const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+        const client = new Client({
+            name: 'instructions-check',
+            version: '0.0.0',
+        })
+        const server = createServer()
+
+        await Promise.all([server.connect(serverTransport), client.connect(clientTransport)])
+
+        // The skill is announced in the initialize result rather than by an
+        // install script, because that is the one channel that reaches someone
+        // who already has this MCP without touching their machine. Read off the
+        // wire, not off the constant, so what is asserted is what a client gets.
+        const instructions = client.getInstructions() ?? ''
+
+        expect(instructions).toContain('refero-design-research')
+
+        // Resolved from the manifest, so renaming the bin fails here instead of
+        // leaving a command in the instructions that does not exist.
+        const installer = Object.keys(bin).find(name => name.endsWith('skill'))
+
+        expect(installer).toBeDefined()
+        expect(instructions).toContain(`${installer} install`)
+
+        // The instruction has to *ask* for the mention, not merely state the
+        // facts: a descriptive sentence leaves the model working quietly with
+        // the tools, which is the behaviour this was meant to change. Matched
+        // loosely on purpose — rewriting it descriptively must fail here rather
+        // than pass silently.
+        expect(instructions).toMatch(/tell the user once/i)
+
+        // And the bounds, or it becomes a pitch on every session.
+        expect(instructions).toMatch(/unprompted/i)
+        expect(instructions).toMatch(/do not mention\s+it a second time/i)
+
+        await client.close()
+        await server.close()
+    })
 })
 
 /**

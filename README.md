@@ -123,12 +123,63 @@ Sections with no data are dropped rather than rendered as empty headings.
 npm install -g @darcas/refero-design-mcp
 ```
 
-Installs the `refero-design-mcp` command — the binary name stays unscoped, so
-client configs stay short.
+Installs the `refero-design-mcp` and `refero-design-skill` commands — the
+binary names stay unscoped, so client configs stay short.
 
 **Requires Node ≥ 22.12.** Node 20 reached end-of-life on 2026-04-30, so 1.1.0
 drops it; npm reports `EBADENGINE` on an older runtime. Everything else about
 installing and running is unchanged.
+
+### The skill
+
+The package also ships an **Agent Skill** — `skill/refero-design-research/` —
+that teaches a coding agent to do evidence-based design research with the Refero
+Design MCP before implementing substantial UI. It is a separate deliverable from
+the MCP itself and neither replaces the other: the MCP answers questions about
+styles, the skill decides how to ask them.
+
+When the MCP is not installed, the skill can set it up for you — after asking,
+and only for this package. The per-client instructions it follows are in
+[install-mcp.md](skill/refero-design-research/references/install-mcp.md).
+
+```bash
+refero-design-skill install
+```
+
+That is the whole command. It detects the agent clients you have, writes one
+shared copy under `~/.agents/skills/`, and links each client to it.
+
+```bash
+refero-design-skill list                           # what is installed where
+refero-design-skill install --client claude,codex  # pick clients
+refero-design-skill install --scope project        # copy into the repository
+refero-design-skill install --dry-run              # print the plan, write nothing
+refero-design-skill uninstall --client claude      # remove what it installed
+```
+
+| Flag | Effect |
+| --- | --- |
+| `--client <ids>` | Comma-separated ids from `skill/refero-design-research/clients.json`. An unknown id fails and lists the valid ones |
+| `--scope global\|project` | Defaults to `global`. Project scope copies into the repository, because a symlink into `$HOME` breaks on another machine and in CI |
+| `--all` | Every client whose detect directory already exists. Bare `install` does this |
+| `--path <dir>` | Escape hatch for an unsupported client or an unusual location |
+| `--dry-run` | Print the resolved plan and touch nothing |
+| `--force` | Required to overwrite local modifications, and it prints the diff first |
+
+Global scope links rather than copies, so the skill is one file on disk with
+several names pointing at it; project scope copies, so it can be committed.
+Links are created as `junction` on Windows, and a skills directory that is
+itself a symlink is written *through* rather than replaced.
+
+**There is no `postinstall`.** Nothing is written outside `node_modules` by
+installing the package — only an explicit `refero-design-skill install`
+writes anything, so upgrade the package and re-run it.
+
+The skill is not affiliated with Refero Design, and it contains no Refero data:
+only instructions, plus a tool reference generated from `src/`.
+
+See [skill/refero-design-research/README.md](skill/refero-design-research/README.md)
+for what the skill does and who it is for.
 
 ### Configuration
 
@@ -139,12 +190,12 @@ Point a client at the binary, either installed globally or run on demand:
   "mcp": {
     "servers": {
       // installed with `npm install -g @darcas/refero-design-mcp`
-      "refero": {
+      "refero-design-mcp": {
         "command": ["refero-design-mcp"]
       },
       // or run on demand — no install step, first run downloads the package
       "refero-on-demand": {
-        "command": ["npx", "-y", "@darcas/refero-design-mcp"]
+        "command": ["npx", "-y", "@darcas/refero-design-mcp@1"]
       }
     }
   }
@@ -285,3 +336,4 @@ indistinguishable from a passing suite.
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+

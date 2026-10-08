@@ -1,0 +1,86 @@
+{
+  "clients": [
+    {
+      "detect": [
+        "~/.claude"
+      ],
+      "global": {
+        "path": "~/.claude/skills"
+      },
+      "id": "claude",
+      "label": "Claude Code",
+      "project": {
+        "path": ".claude/skills"
+      },
+      "source": "https://code.claude.com/docs/en/skills — personal ~/.claude/skills, project .claude/skills, symlinked skill folders supported",
+      "status": "verified"
+    },
+    {
+      "detect": [
+        "~/.config/opencode"
+      ],
+      "global": {
+        "path": "~/.config/opencode/skills"
+      },
+      "id": "opencode",
+      "label": "OpenCode",
+      "project": {
+        "path": ".opencode/skills"
+      },
+      "source": "https://opencode.ai/docs/skills/ — global ~/.config/opencode/skills, project .opencode/skills; also reads the shared .agents/skills root",
+      "status": "verified"
+    },
+    {
+      "detect": [
+        "~/.codex"
+      ],
+      "global": {
+        "sharedRoot": true
+      },
+      "id": "codex",
+      "label": "Codex",
+      "project": {
+        "sharedRoot": true
+      },
+      "source": "https://developers.openai.com/codex/skills/ — USER $HOME/.agents/skills, REPO .agents/skills up to the repo root; symlinked skill folders are followed",
+      "status": "verified"
+    },
+    {
+      "detect": [
+        "~/.cursor"
+      ],
+      "global": {
+        "sharedRoot": true
+      },
+      "id": "cursor",
+      "label": "Cursor",
+      "project": {
+        "sharedRoot": true
+      },
+      "source": "https://cursor.com/docs/context/skills — project .agents/skills and .cursor/skills, global ~/.agents/skills and ~/.cursor/skills",
+      "status": "verified"
+    },
+    {
+      "detect": [
+        "~/.copilot",
+        "~/.vscode"
+      ],
+      "global": {
+        "sharedRoot": true
+      },
+      "id": "copilot",
+      "label": "Copilot / VS Code",
+      "project": {
+        "path": ".github/skills"
+      },
+      "source": "https://code.visualstudio.com/docs/agent-customization/agent-skills — project .github/skills, .claude/skills, .agents/skills; personal ~/.copilot/skills, ~/.claude/skills, ~/.agents/skills",
+      "status": "verified"
+    }
+  ],
+  "sharedRoots": {
+    "global": "~/.agents/skills",
+    "project": "./.agents/skills"
+  },
+  "skillName": "refero-design-research",
+  "skillVersion": "1.0.0"
+}

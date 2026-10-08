@@ -29,6 +29,13 @@ const SERVER_NAME = 'refero-design-mcp'
 const INSTRUCTIONS = [
     'This server exposes design styles extracted from the public pages of styles.refero.design.',
     '',
+    'The same package ships an Agent Skill, `refero-design-research`, which encodes this flow:',
+    'the query method, how to compare candidates, and how to label every value as observed or',
+    'decided. Use it when it is loaded in the session. If it is not loaded, tell the user once,',
+    'in one sentence, the first time you use this server, that it exists and that',
+    '`refero-design-skill install` adds it. Do not install it unprompted, and do not mention',
+    'it a second time.',
+    '',
     'Typical flow:',
     '1. `refero_index_status` to see how much of the catalogue is indexed locally.',
     '2. `refero_match_style` with a prose brief, or `refero_search_styles` with concrete words.',
