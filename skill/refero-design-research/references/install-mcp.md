@@ -73,10 +73,10 @@ a tool list — detection matches by suffix, so either spelling is found, but a
 consistent name keeps the config and the tool list readable.
 
 The version is pinned to the **current major** so that an unattended `-y`
-cannot pull a breaking release. Verified on 2026-10-08: `@darcas/refero-design-mcp`
-is published on npm (1.0.0, 1.0.1, 1.0.2, 1.1.0; `latest` 1.1.0), so `@1`
-resolves today and will pick up 1.2.0 as soon as it is published. If the
-package's major ever changes, this file must change in the same commit.
+cannot pull a breaking release. Verified on 2026-10-09: `@darcas/refero-design-mcp`
+is published on npm (1.0.0, 1.0.1, 1.0.2, 1.1.0, 1.2.0; `latest` 1.2.0), so `@1`
+resolves today and takes every later minor. If the package's major ever changes,
+this file must change in the same commit.
 
 The server needs no configuration and no credentials. It reads public pages and
 caches on disk; its optional environment variables are documented in
@@ -296,5 +296,5 @@ Verified against <https://code.claude.com/docs/en/mcp>,
 <https://developers.openai.com/codex/mcp/>,
 <https://cursor.com/docs/context/mcp>,
 <https://code.visualstudio.com/docs/copilot/customization/mcp-servers>, and
-`npm view @darcas/refero-design-mcp` on 2026-10-08.
+`npm view @darcas/refero-design-mcp` on 2026-10-09.
 

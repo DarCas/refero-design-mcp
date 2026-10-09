@@ -1,6 +1,6 @@
 # Refero MCP tools
 
-Generated from `src/` at v1.2.0, not from the README. If the two ever disagree,
+Generated from `src/` at v1.3.0, not from the README. If the two ever disagree,
 `src/` is the truth and this file is the thing that must be regenerated.
 
 Six tools and one resource. Every tool is read-only, idempotent and open-world:
@@ -30,7 +30,7 @@ Coverage. Call it before you conclude that a style does not exist.
 **Output** — plain text:
 
 ```
-Refero index status (server version 1.2.0)
+Refero index status (server version 1.3.0)
 
 - Published styles: 1342
 - Indexed locally: 26
@@ -268,4 +268,4 @@ string.
 
 ---
 
-Generated from refero-design-mcp @ 1.2.0, 2026-10-08
+Generated from refero-design-mcp @ 1.3.0, 2026-10-09
