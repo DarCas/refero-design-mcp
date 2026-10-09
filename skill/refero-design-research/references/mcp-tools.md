@@ -241,16 +241,20 @@ negative integer **throws at startup** rather than silently defaulting.
 
 | Variable | Default | Effect on your research |
 | --- | --- | --- |
-| `REFERO_MAX_FETCHES` | `25` | Hard ceiling on page fetches per tool call. This is why a single `expand` cannot index everything |
-| `REFERO_MAX_RESPONSE_CHARS` | `40000` | Budget before `refero_get_design_md` truncates |
+| `REFERO_CACHE_DIR` | `~/.cache/refero-design-mcp` | On-disk cache |
 | `REFERO_CACHE_TTL_MS` | `604800000` (7 days) | How long a cached style is served without revalidation |
 | `REFERO_CONCURRENCY` | `4` | Simultaneous requests; politeness ceiling |
-| `REFERO_TIMEOUT_MS` | `30000` | Per-request timeout |
+| `REFERO_MAX_FETCHES` | `25` | Hard ceiling on page fetches per tool call. This is why a single `expand` cannot index everything |
+| `REFERO_MAX_RESPONSE_CHARS` | `40000` | Budget before `refero_get_design_md` truncates |
 | `REFERO_SITE_URL` | `https://styles.refero.design` | Origin base |
 | `REFERO_STYLES_SITEMAP` | `{site}/sitemaps/styles.xml` | Style index |
-| `REFERO_CACHE_DIR` | `~/.cache/refero-design-mcp` | On-disk cache |
+| `REFERO_TIMEOUT_MS` | `30000` | Per-request timeout |
 | `REFERO_USER_AGENT` | `refero-design-mcp/<version> (+repo URL)` | Request identification |
 | `REFERO_VERBOSE` | `false` | Diagnostics to stderr; quiet is normal |
+
+Alphabetical. If a search comes back weak, `REFERO_MAX_FETCHES` is the ceiling
+that bounds it — raising it costs one page fetch per tool call against a third
+party.
 
 There is no hardcoded style count anywhere, because it changes. The coverage
 *rule* is what travels: never conclude a style is absent from a low-coverage

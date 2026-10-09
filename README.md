@@ -7,7 +7,7 @@ affiliation or endorsement is implied.
  
 ![Node.js](https://img.shields.io/badge/node.js-%3E%3D22.12-5FA04E?logo=nodedotjs&logoColor=white&style=for-the-badge)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge)](https://www.typescriptlang.org)
-[![Tests](https://img.shields.io/badge/tests-116%20passing-brightgreen?style=for-the-badge)](#testing)
+[![Tests](https://img.shields.io/badge/tests-125%20passing-brightgreen?style=for-the-badge)](#testing)
 
 ![npm](https://img.shields.io/npm/v/@darcas/refero-design-mcp?style=for-the-badge)
 ![NPM Downloads](https://img.shields.io/npm/dy/%40darcas%2Frefero-design-mcp?style=for-the-badge)
@@ -156,7 +156,7 @@ shared copy under `~/.agents/skills/`, and links each client to it.
 ```bash
 refero-design-skill list                           # what is installed where
 refero-design-skill install --client claude,codex  # pick clients
-refero-design-skill install --scope project        # copy into the repository
+refero-design-skill install --project               # copy into the repository
 refero-design-skill install --dry-run              # print the plan, write nothing
 refero-design-skill uninstall --client claude      # remove what it installed
 ```
@@ -165,10 +165,20 @@ refero-design-skill uninstall --client claude      # remove what it installed
 | --- | --- |
 | `--client <ids>` | Comma-separated ids from `skill/refero-design-research/clients.json`. An unknown id fails and lists the valid ones |
 | `--scope global\|project` | Defaults to `global`. Project scope copies into the repository, because a symlink into `$HOME` breaks on another machine and in CI |
+| `--global`, `--project` | Shorthands for `--scope global` and `--scope project`, which are what most other installers spell this way |
 | `--all` | Every client whose detect directory already exists. Bare `install` does this |
 | `--path <dir>` | Escape hatch for an unsupported client or an unusual location |
 | `--dry-run` | Print the resolved plan and touch nothing |
 | `--force` | Required to overwrite local modifications, and it prints the diff first |
+
+Declare the scope **once**. `--global --project` and `--scope project --global`
+both fail: picking one silently would install to the other place while you
+believe you chose. A boolean flag given a value (`--force=1`) fails for the same
+reason.
+
+Note the two scopes here decide **where the skill files go**. They are unrelated
+to the global/local question in [Configuration](#configuration), which decides
+where the MCP server entry goes in a client's config.
 
 Global scope links rather than copies, so the skill is one file on disk with
 several names pointing at it; project scope copies, so it can be committed.
@@ -187,18 +197,14 @@ for what the skill does and who it is for.
 
 ### Configuration
 
-Point a client at the binary, either installed globally or run on demand:
+Point a client at the package, run on demand through `npx` — no install step,
+first run downloads the package:
 
 ```jsonc
 {
   "mcp": {
     "servers": {
-      // installed with `npm install -g @darcas/refero-design-mcp`
       "refero-design-mcp": {
-        "command": ["refero-design-mcp"]
-      },
-      // or run on demand — no install step, first run downloads the package
-      "refero-on-demand": {
         "command": ["npx", "-y", "@darcas/refero-design-mcp@1"]
       }
     }
@@ -207,9 +213,38 @@ Point a client at the binary, either installed globally or run on demand:
 ```
 
 `-y` suppresses the install prompt, which would otherwise block startup. The
-`npx` form starts in about 2s on a cold cache and under 1s once cached; the
-global form starts immediately and needs no network. Either works, and the
-server behaves identically.
+version is pinned to the current major so an unattended `-y` cannot pull a
+breaking release. Starts in about 2s on a cold cache, under 1s once cached.
+
+If the package is installed globally (`npm install -g
+@darcas/refero-design-mcp`), the entry can call the binary directly instead:
+
+```jsonc
+"refero-design-mcp": {
+  "command": ["refero-design-mcp"]
+}
+```
+
+This form works **only** with the global install in place — without it the
+client fails to start the server (`exit 127: refero-design-mcp: not found`).
+Either form behaves identically once running.
+
+**One trap, for developing this package rather than using it.** Both forms fail
+with `exit 127: sh: 1: refero-design-mcp: not found` when the client's working
+directory is a checkout of *this* repository, and work everywhere else. Inside
+its own checkout the `package.json` matches the package name, so `npx` resolves
+the request to the local project instead of the registry — and a project never
+links its own bins into `node_modules/.bin`, so `npx` ends up running the bare
+binary name, which is not on the PATH. If you hit it, name the package and the
+binary separately:
+
+```jsonc
+"refero-design-mcp": {
+  "command": ["npx", "-y", "-p", "@darcas/refero-design-mcp@1", "refero-design-mcp"]
+}
+```
+
+No other user hits this: it needs a local `package.json` with this exact name.
 
 The package is scoped but the binary is not, so the command is
 `refero-design-mcp` with no `@darcas/` prefix.
@@ -224,16 +259,21 @@ Every setting is optional.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
+| `REFERO_CACHE_DIR` | `~/.cache/refero-design-mcp` | On-disk cache location |
+| `REFERO_CACHE_TTL_MS` | `604800000` | Cache freshness window (7 days) |
+| `REFERO_CONCURRENCY` | `4` | Max simultaneous requests |
+| `REFERO_MAX_FETCHES` | `25` | Max page fetches per tool call |
+| `REFERO_MAX_RESPONSE_CHARS` | `40000` | Response budget |
 | `REFERO_SITE_URL` | `https://styles.refero.design` | Origin base URL |
 | `REFERO_STYLES_SITEMAP` | `{site}/sitemaps/styles.xml` | Style index |
-| `REFERO_MAX_FETCHES` | `25` | Max page fetches per tool call |
-| `REFERO_CONCURRENCY` | `4` | Max simultaneous requests |
 | `REFERO_TIMEOUT_MS` | `30000` | Per-request timeout |
-| `REFERO_CACHE_TTL_MS` | `604800000` | Cache freshness window (7 days) |
-| `REFERO_CACHE_DIR` | `~/.cache/refero-design-mcp` | On-disk cache location |
 | `REFERO_USER_AGENT` | see `src/config.ts` | Request identification |
-| `REFERO_MAX_RESPONSE_CHARS` | `40000` | Response budget |
 | `REFERO_VERBOSE` | `false` | Diagnostics to stderr |
+
+Alphabetical, so a variable is found by looking rather than by knowing which
+group it sits in. The defaults are the ones `src/config.ts` validates at startup;
+`REFERO_MAX_FETCHES`, `REFERO_CONCURRENCY` and `REFERO_TIMEOUT_MS` are the three
+worth touching first when you want faster research rather than more of it.
 
 ## Example session
 
@@ -302,7 +342,7 @@ npm run verify     # typecheck + lint + test + build
 
 ## Testing
 
-116 tests across 9 files.
+125 tests across 9 files.
 
 Unit tests run **offline**, against a hand-assembled sample of a real RSC
 payload — the fragile parts (id anchoring, brace matching, lazy reference

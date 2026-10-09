@@ -38,23 +38,26 @@ auditable, and it stops a plausible-looking value from passing as evidence.
 
 ## Layout
 
+Directories first, then files, alphabetical within each group:
+
 ```
 skill/refero-design-research/
-├── SKILL.md                     the protocol — what to call, in what order
-├── README.md                    this file
-├── clients.json                 installer manifest (target directories)
-├── references/
-│   ├── mcp-tools.md             generated from the MCP source
-│   ├── install-mcp.md           adding the MCP to each client, with consent
-│   ├── research-workflow.md     queries, comparison, the question bank
-│   ├── design-output.md         the output shape and the `design.md` skeleton
-│   ├── defaults.md              fallback rules when evidence is missing
-│   └── donation.md              the closing donation line, and its bounds
 ├── examples/
 │   └── design-direction.example.md   worked output, fully synthetic
-└── tests/
-    ├── validate.mjs             static checks, offline, no dependencies
-    └── scenarios/               behavioural checklist (A–M)
+├── references/
+│   ├── defaults.md               fallback rules when evidence is missing
+│   ├── design-output.md          the output shape and the `design.md` skeleton
+│   ├── donation.md               the closing donation line, and its bounds
+│   ├── install-mcp.md            adding the MCP to each client, with consent
+│   ├── mcp-tools.md              generated from the MCP source
+│   └── research-workflow.md      queries, comparison, the question bank
+├── tests/
+│   ├── scenarios/                behavioural checklist, one file per
+│   │                             scenario, A–M
+│   └── validate.mjs              static checks, offline, no dependencies
+├── README.md                     this file
+├── SKILL.md                      the protocol — what to call, in what order
+└── clients.json                  installer manifest (target directories)
 ```
 
 `SKILL.md` is the only file an agent loads automatically. The rest are read on

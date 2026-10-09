@@ -793,8 +793,9 @@ export interface CliDeps {
 const USAGE = [
     'Usage:',
     '  refero-design-skill install [--client <ids>] [--scope global|project] [--all]',
-    '                       [--dry-run] [--force] [--path <dir>]',
-    '  refero-design-skill uninstall --client <ids> [--scope global|project] [--dry-run]',
+    '                       [--global | --project] [--dry-run] [--force] [--path <dir>]',
+    '  refero-design-skill uninstall --client <ids> [--scope global|project]',
+    '                       [--global | --project] [--dry-run]',
     '  refero-design-skill list',
     '  refero-design-skill --version',
     '',
@@ -802,6 +803,9 @@ const USAGE = [
     'shared copy under ~/.agents/skills and links each client to it; project scope',
     'copies into the repository, because a symlink into $HOME breaks on another',
     'machine and in CI.',
+    '',
+    '--global and --project are shorthands for --scope global and --scope project.',
+    'Declare the scope once: two of these together is an error, not a silent pick.',
 ].join('\n')
 
 interface ParsedArgs {
@@ -832,6 +836,29 @@ function parseArgs(argv: string[]): ParsedArgs {
         return next
     }
 
+    /**
+     * Set the scope, from `--scope` or from the `--global` / `--project`
+     * shorthands.
+     *
+     * One declaration only. Repeating a flag, or combining a shorthand with
+     * `--scope`, fails rather than letting the last one win silently: the user
+     * believed they chose something specific, and a quietly discarded scope
+     * would install to the wrong place — global instead of the repository, or
+     * the reverse.
+     */
+    let scopeFrom: string | undefined
+    const setScope = (scope: Scope, flag: string): void => {
+        if (scopeFrom !== undefined) {
+            throw new CliError(
+                scopeFrom === flag ? `${flag} given twice.` : `${scopeFrom} and ${flag} say different things.`,
+                USAGE,
+            )
+        }
+
+        scopeFrom = flag
+        parsed.scope = scope
+    }
+
     try {
         const rest = [...argv]
 
@@ -847,6 +874,13 @@ function parseArgs(argv: string[]): ParsedArgs {
             }
 
             const [flag, inline] = arg.includes('=') ? [arg.slice(0, arg.indexOf('=')), arg.slice(arg.indexOf('=') + 1)] : [arg, undefined]
+
+            // A boolean takes no value. `--force=1` is a typo, and ignoring it
+            // would run a destructive command the caller believed they had
+            // qualified. Rejecting is cheaper than finding out later.
+            if (inline !== undefined && BOOLEAN_FLAGS.has(flag)) {
+                throw new CliError(`${flag} takes no value.`, USAGE)
+            }
 
             switch (flag) {
                 case '--version':
@@ -865,10 +899,16 @@ function parseArgs(argv: string[]): ParsedArgs {
                     if (scope !== 'global' && scope !== 'project') {
                         throw new CliError(`--scope must be global or project, got "${scope}".`, USAGE)
                     }
-                    parsed.scope = scope
+                    setScope(scope, flag)
                     index += inline === undefined ? 1 : 0
                     break
                 }
+                case '--global':
+                    setScope('global', flag)
+                    break
+                case '--project':
+                    setScope('project', flag)
+                    break
                 case '--path':
                     parsed.path = value(flag, inline, rest, index)
                     index += inline === undefined ? 1 : 0
@@ -985,6 +1025,11 @@ export function runCli(argv: string[], deps: CliDeps): number {
  * package root. That is what makes it work from an `npx` cache.
  */
 export const SKILL_DIR = fileURLToPath(new URL('../../skill/refero-design-research', import.meta.url))
+
+/** Flags that stand alone; giving one a value is a mistake, not a request. */
+const BOOLEAN_FLAGS = new Set([
+    '--all', '--dry-run', '--force', '--global', '--help', '--project', '--version', '-h',
+])
 
 function isDirectInvocation(): boolean {
     const entry = process.argv[ 1 ]

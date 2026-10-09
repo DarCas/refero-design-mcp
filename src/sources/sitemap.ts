@@ -30,10 +30,6 @@ const stylePathRe = /\/style\/([0-9a-fA-F-]{36})\/?$/
 export function parseStylesSitemap(xml: string): SitemapEntry[] {
     const entries: SitemapEntry[] = []
 
-    // Parsed per `<url>` block rather than as two flat lists zipped by index.
-    // Zipping silently shifted every entry after the first `<url>` that carried
-    // no `<lastmod>`, attaching one style's timestamp to a different style. The
-    // pairing is now structural, so a missing sibling simply means no lastmod.
     for (const block of xml.matchAll(URL_BLOCK_RE)) {
         const body = block[ 1 ] ?? ''
 

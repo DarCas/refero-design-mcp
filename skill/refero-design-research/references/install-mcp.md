@@ -264,6 +264,33 @@ research happened. Give the user one paste-able resume message containing the
 brief and the answers gathered so far, and state the removal command from the
 row above.
 
+## If the server will not start
+
+One failure is specific to developing this package rather than using it.
+
+**Symptom:** the client reports `exited with code 127: sh: 1:
+refero-design-mcp: not found`, and only when the client's working directory is a
+checkout of this package. The same entry works from any other project.
+
+**Cause:** inside its own checkout, the `package.json` names this package, so
+`npx` resolves the request to the local project instead of the registry. A
+project never links its own bins into `node_modules/.bin`, so `npx` falls back to
+running the bare binary name, which is not on the PATH. Outside a checkout there
+is no local `package.json` to match, so `npx` downloads and runs normally.
+
+**Workaround:** name the package and the binary separately with `-p`, which
+forces a temporary install and ignores the local project:
+
+```bash
+npx -y -p @darcas/refero-design-mcp@1 refero-design-mcp
+```
+
+An entry that fails inside this repository only needs
+`["npx", "-y", "-p", "@darcas/refero-design-mcp@1", "refero-design-mcp"]` in
+place of `["npx", "-y", "@darcas/refero-design-mcp@1"]`. Leave the documented
+form alone for every other user: this is not their situation, and changing it
+would complicate a working instruction for no benefit.
+
 Verified against <https://code.claude.com/docs/en/mcp>,
 <https://opencode.ai/docs/mcp-servers/>, <https://opencode.ai/docs/config/>,
 <https://developers.openai.com/codex/mcp/>,

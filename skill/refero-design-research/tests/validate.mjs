@@ -194,7 +194,10 @@ function localReferences(file) {
         // A path rooted at `~`, `$` or a dot-directory names a location on the
         // user's machine (`~/.claude.json`, `.cursor/mcp.json`), never a file
         // of this skill.
-        && !/^(~|\$|\.)/.test(target))
+        && !/^(~|\$|\.)/.test(target)
+        // Likewise `node_modules/.bin`: a path inside an install tree, which
+        // this skill never contains and must never be asked to resolve.
+        && !target.split('/').includes('node_modules'))
 }
 
 check('every local reference in the skill resolves', () => {
@@ -590,6 +593,182 @@ check('donation.md attributes the money to the tool, never to Refero', () => {
     return /never name Refero Design as the recipient/i.test(text)
         ? null
         : 'does not rule out attributing it to Refero Design'
+})
+
+/**
+ * The tree drawn in README.md's `## Layout`, as paths relative to the skill.
+ *
+ * Directories are named with a trailing slash and carry no description; their
+ * children sit one level in, so a line's depth is the width of its tree prefix
+ * divided by the four columns each level occupies.
+ */
+function layoutTree() {
+    const block = /## Layout[\s\S]*?```\n([\s\S]*?)```/.exec(read('README.md'))
+
+    if (!block) return null
+
+    const entries = []
+    const stack = []
+
+    for (const line of block[1].split('\n')) {
+        const match = /^([\s│]*(?:├──|└──)\s+)([^\s]+)/.exec(line)
+
+        if (!match) continue
+
+        const depth = Math.max(match[1].length / 4 - 1, 0)
+        const isDirectory = match[2].endsWith('/')
+
+        stack.length = depth
+        const parent = stack.join('/')
+        const name = match[2].replace(/\/$/, '')
+
+        if (isDirectory) stack.push(name)
+        entries.push({ name, parent, isDirectory })
+    }
+
+    return entries
+}
+
+check('README.md Layout lists exactly the files that exist', () => {
+    const entries = layoutTree()
+
+    if (entries === null) return 'no Layout code block'
+    if (entries.length === 0) return 'the Layout block parsed to nothing'
+
+    const pathOf = entry => (entry.parent === '' ? entry.name : `${entry.parent}/${entry.name}`)
+
+    const listed = new Set(entries.map(pathOf))
+    const real = new Set(ALL_FILES.map(rel))
+
+    // A listed directory stands for its contents only when the tree draws no
+    // children under it: that is what keeps `tests/scenarios/` to one line
+    // instead of thirteen. A directory whose children *are* drawn covers
+    // nothing, so a file added to `references/` without a new line is caught.
+    const parents = new Set(entries.map(entry => entry.parent))
+    const collapsed = entries
+        .filter(entry => entry.isDirectory && !parents.has(pathOf(entry)))
+        .map(pathOf)
+    const covered = file => collapsed.some(dir => file.startsWith(`${dir}/`))
+
+    const missing = []
+    const invented = []
+
+    for (const file of real) {
+        if (!listed.has(file) && !covered(file)) missing.push(file)
+    }
+
+    for (const path of listed) {
+        if (real.has(path)) continue
+        if ([ ...real ].some(file => file.startsWith(`${path}/`))) continue
+        invented.push(path)
+    }
+
+    if (missing.length > 0) return `not listed: ${missing.join(', ')}`
+    return invented.length === 0 ? null : `listed but absent: ${invented.join(', ')}`
+})
+
+check('README.md Layout is directories first then files, alphabetical within each', () => {
+    const entries = layoutTree()
+
+    if (entries === null) return 'no Layout code block'
+
+    const groups = new Map()
+
+    for (const entry of entries) {
+        if (!groups.has(entry.parent)) groups.set(entry.parent, [])
+        groups.get(entry.parent).push(entry)
+    }
+
+    const wrong = []
+
+    for (const [parent, children] of groups) {
+        // Directories, then files, each alphabetical: the order a reader scans
+        // a tree in, and the one that makes the next addition predictable.
+        const order = children.map(child => `${child.isDirectory ? '0' : '1'}${child.name}`)
+        const sorted = [ ...order ].sort()
+
+        if (order.join('|') !== sorted.join('|')) {
+            wrong.push(`${parent === '' ? 'the skill root' : `${parent}/`}: ${children.map(c => c.name).join(', ')}`)
+        }
+    }
+
+    return wrong.length === 0 ? null : `unsorted in ${wrong.join(' | ')}`
+})
+
+/**
+ * The environment variables `src/config.ts` reads, and the tables that
+ * document them.
+ *
+ * The tables name a variable in prose elsewhere in the same file, so only the
+ * first cell of a table row counts: it is the one that starts and ends with a
+ * backticked `REFERO_*` and nothing else.
+ */
+function envTables() {
+    const files = [ '../../README.md', 'references/mcp-tools.md' ]
+    const tables = []
+
+    for (const file of files) {
+        let text
+
+        try {
+            text = read(file)
+        } catch {
+            // Extracted from a tarball there is no repository README. The
+            // skill still has to validate, so check whatever is here.
+            continue
+        }
+
+        const found = new Map()
+
+        for (const [, name] of text.matchAll(/^\|\s*`(REFERO_[A-Z_]+)`\s*\|/gm)) {
+            if (!found.has(name)) found.set(name, found.size)
+        }
+
+        tables.push({ file, found })
+    }
+
+    return tables
+}
+
+check('every environment variable in src/config.ts is documented in both tables', () => {
+    const config = join(REPO_ROOT, 'src', 'config.ts')
+
+    let source
+
+    try {
+        source = readFileSync(config, 'utf8')
+    } catch {
+        return SKIP
+    }
+
+    const declared = new Set([ ...source.matchAll(/\bREFERO_[A-Z_]+\b/g) ].map(match => match[0]))
+    const problems = []
+
+    for (const { file, found } of envTables()) {
+        const documented = new Set(found.keys())
+        const missing = [...declared].filter(name => !documented.has(name)).sort()
+        const invented = [...documented].filter(name => !declared.has(name)).sort()
+
+        if (missing.length > 0) problems.push(`${file}: undocumented ${missing.join(', ')}`)
+        if (invented.length > 0) problems.push(`${file}: documents ${invented.join(', ')}, which the code does not read`)
+    }
+
+    return problems.length === 0 ? null : problems.join('; ')
+})
+
+check('environment variable tables are alphabetical', () => {
+    const unsorted = []
+
+    for (const { file, found } of envTables()) {
+        const order = [...found.keys()]
+        const sorted = [ ...order ].sort()
+
+        if (order.join('|') !== sorted.join('|')) {
+            unsorted.push(`${file}: ${order.join(', ')}`)
+        }
+    }
+
+    return unsorted.length === 0 ? null : `not alphabetical in ${unsorted.join(' | ')}`
 })
 
 // ── content audit ───────────────────────────────────────────────────────────

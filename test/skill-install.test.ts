@@ -230,6 +230,73 @@ describe('scope', () => {
     })
 })
 
+describe('--global and --project', () => {
+    it('install to the same places as --scope global', () => {
+        expect(run([ 'install', '--client', 'claude', '--global' ])).toBe(0)
+
+        expect(lstatSync(claudeDir()).isSymbolicLink()).toBe(true)
+        expect(existsSync(join(sharedDir(), 'SKILL.md'))).toBe(true)
+        expect(existsSync(join(harness.project, '.claude', 'skills', SKILL_NAME))).toBe(false)
+    })
+
+    it('install to the same places as --scope project', () => {
+        expect(run([ 'install', '--client', 'claude', '--project' ])).toBe(0)
+
+        const projectClaude = join(harness.project, '.claude', 'skills', SKILL_NAME)
+
+        expect(lstatSync(projectClaude).isSymbolicLink()).toBe(false)
+        expect(markerAt(projectClaude).mode).toBe('copy')
+        expect(existsSync(sharedDir())).toBe(false)
+    })
+
+    it('leaves the default at global when neither is given', () => {
+        expect(run([ 'install', '--client', 'claude' ])).toBe(0)
+
+        expect(lstatSync(claudeDir()).isSymbolicLink()).toBe(true)
+    })
+
+    it('uninstall by shorthand too', () => {
+        run([ 'install', '--client', 'claude', '--project' ])
+
+        expect(run([ 'uninstall', '--client', 'claude', '--project' ])).toBe(0)
+        expect(existsSync(join(harness.project, '.claude', 'skills', SKILL_NAME))).toBe(false)
+    })
+
+    it('refuse two scopes rather than pick one', () => {
+        expect(run([ 'install', '--global', '--project' ])).toBe(1)
+        expect(err).toContain('--global and --project say different things')
+        // Nothing written: a rejected scope must not fall back to the default.
+        expect(existsSync(sharedDir())).toBe(false)
+    })
+
+    it('refuse a shorthand together with --scope', () => {
+        expect(run([ 'install', '--scope', 'project', '--global' ])).toBe(1)
+        expect(err).toContain('say different things')
+        expect(existsSync(join(harness.project, '.claude', 'skills', SKILL_NAME))).toBe(false)
+    })
+
+    it('refuse a repeated --scope, which used to take the last one silently', () => {
+        expect(run([ 'install', '--client', 'claude', '--scope', 'project', '--scope', 'global' ])).toBe(1)
+        expect(err).toContain('--scope given twice')
+        expect(existsSync(sharedDir())).toBe(false)
+        expect(existsSync(join(harness.project, '.claude', 'skills', SKILL_NAME))).toBe(false)
+    })
+
+    it('reject a value on a boolean flag instead of ignoring it', () => {
+        // `--global=project` used to install globally, discarding the value.
+        expect(run([ 'install', '--global=project' ])).toBe(1)
+        expect(err).toContain('--global takes no value')
+        expect(existsSync(sharedDir())).toBe(false)
+    })
+
+    it('reject a value on the other booleans too', () => {
+        for (const flag of [ '--dry-run=yes', '--force=1', '--all=1' ]) {
+            expect(run([ 'install', flag ])).toBe(1)
+            expect(err).toContain('takes no value')
+        }
+    })
+})
+
 describe('--dry-run', () => {
     it('writes nothing at all, including markers', () => {
         expect(run([ 'install', '--dry-run' ])).toBe(0)

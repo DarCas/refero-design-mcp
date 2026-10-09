@@ -20,7 +20,7 @@ npm start          # node dist/cli.js, after a build
 | --- | --- | --- |
 | `npm run typecheck` | `tsc --noEmit` | Covers `src/` **and** `test/` |
 | `npm run lint` | `eslint src test` | Type-aware. Use `--fix`; never hand-fix the semicolon rule |
-| `npm test` | `vitest run` | 116 tests / 9 files. The e2e suite hits the live site and skips if the origin is unreachable |
+| `npm test` | `vitest run` | 125 tests / 9 files. The e2e suite hits the live site and skips if the origin is unreachable |
 | `npm run build` | `clean && tsc -p tsconfig.build.json && node scripts/postbuild.mjs` | The postbuild step chmods the `bin` targets |
 | `node scripts/smoke.mjs` | starts the built server and checks the MCP handshake | Run after a `bin`, build or `engines` change; it is what proves the Node floor |
 | `npm run deploy` | `verify` then `npm publish` | Never run it yourself — see hard rules |
