@@ -16,7 +16,7 @@ trim_trailing_whitespace = false
 indent_size = 2
 ij_json_space_after_colon = true
 
-[*.ts]
+[*.{ts,tsx,mjs}]
 ij_typescript_blank_lines_after_imports = 1
 ij_typescript_enforce_trailing_comma = whenmultiline
 ij_typescript_force_semicolon_style = false

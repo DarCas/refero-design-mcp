@@ -1,0 +1,104 @@
+/*
+ * Dario Casertano <dario@casertano.name>
+ * Copyright (c) 2026 Casertano Dario – All rights reserved.
+ * Licensed under the MIT License.
+ */
+
+/*
+ * Hero — the page's first section: the wordmark, the tagline, one honest
+ * subhead, the install command on a terminal surface, and the two links.
+ *
+ * The hero is the one centred block on the page: it addresses the reader
+ * directly, where everything below it is the document.
+ */
+
+.hero {
+    padding-block: var(--section-gap);
+    text-align: center;
+}
+
+.hero__brand {
+    font-family: var(--font-mono);
+    font-size: var(--size-eyebrow);
+    font-weight: var(--weight-eyebrow);
+    line-height: var(--leading-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
+    color: var(--accent);
+}
+
+/* The display headline uses the document measure; it wraps at ~2 balanced lines. */
+.hero__title {
+    margin-block-start: var(--gap-md);
+    text-wrap: balance;
+}
+
+.hero__lede {
+    max-width: 62ch;
+    margin-block-start: var(--gap-lg);
+    margin-inline: auto;
+    color: var(--ink-secondary);
+}
+
+.hero__install {
+    display: inline-block;
+    max-width: 40rem;
+    margin-block-start: var(--gap-lg);
+    padding: var(--card-padding);
+    text-align: left;
+}
+
+.hero__install-label {
+    font-family: var(--font-mono);
+    font-size: var(--size-eyebrow);
+    font-weight: var(--weight-eyebrow);
+    line-height: var(--leading-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--terminal-muted);
+}
+
+.hero__install-code {
+    margin: 0;
+    margin-block-start: var(--gap-sm);
+    overflow-x: auto;
+}
+
+.hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-md) var(--gap-lg);
+    align-items: center;
+    justify-content: center;
+    margin-block-start: var(--gap-lg);
+}
+
+.hero__facts {
+    margin-block-start: var(--gap-lg);
+    font-family: var(--font-mono);
+    font-size: var(--size-code);
+    color: var(--ink-muted);
+}
+
+/* The primary action — graphite and white, never the accent as a fill. */
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding-inline: var(--gap-lg);
+    border-radius: var(--radius-action);
+    background-color: var(--ink);
+    color: var(--accent-ink);
+    font-size: var(--size-body-sm);
+    font-weight: var(--weight-eyebrow);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.button:hover {
+    text-decoration: none;
+}
+
+.link {
+    font-size: var(--size-body-sm);
+}

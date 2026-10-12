@@ -1,0 +1,32 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "chrome-devtools": {
+        "command": [
+          "npx",
+          "-y",
+          "chrome-devtools-mcp",
+          "--autoConnect"
+        ],
+        "type": "local"
+      },
+      "github": {
+        "headers": {
+          "Authorization": "Bearer {env:GITHUB_PERSONAL_ACCESS_TOKEN}"
+        },
+        "oauth": false,
+        "type": "remote",
+        "url": "https://api.githubcopilot.com/mcp/"
+      },
+      "refero-design-mcp": {
+        "type": "local",
+        "command": [
+          "npx",
+          "-y",
+          "@darcas/refero-design-mcp@latest"
+        ]
+      }
+    }
+  }
+}

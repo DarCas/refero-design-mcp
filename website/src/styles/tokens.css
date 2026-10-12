@@ -1,0 +1,117 @@
+/*
+ * Dario Casertano <dario@casertano.name>
+ * Copyright (c) 2026 Casertano Dario – All rights reserved.
+ * Licensed under the MIT License.
+ */
+
+/*
+ * Design tokens — the set defined in `docs/website/DESIGN.md` §4.
+ *
+ * Every value is labelled there as Observed (read from a style on
+ * styles.refero.design, with its id) or Decided (chosen in DESIGN.md, with its
+ * reason). Nothing in this codebase may introduce a value that is neither.
+ */
+
+:root {
+    /* Colour — light canvas */
+    --canvas: #ffffff;
+    --surface-sunken: #fafafa;
+    --ink: #18181a;
+    --ink-secondary: #454549;
+    --ink-muted: #707077;
+    --rule: #e6e6e8;
+    --rule-strong: #cfcfd1;
+    --accent: #6c5edc;
+    --accent-soft: #efecff;
+    --accent-ink: #ffffff;
+
+    /* Colour — terminal and inverted surfaces */
+    --terminal-canvas: #0a0a0a;
+    --terminal-surface: #171717;
+    --terminal-edge: #262626;
+    --terminal-text: #fafafa;
+    --terminal-muted: #a1a1a1;
+    --terminal-faint: #737373;
+    --inverted-rule: #2f2f31; /* Decided — DESIGN.md §5, FAQ/footer separators */
+
+    /* Colour — dark slot: defined so a later decision is not a rewrite */
+    --dark-canvas: #0a0a0a;
+    --dark-surface-sunken: #171717;
+    --dark-ink: #fafafa;
+    --dark-ink-secondary: #a1a1a1;
+    --dark-ink-muted: #737373;
+    --dark-rule: #262626;
+    --dark-rule-strong: #464646;
+    --dark-accent: #a99bff;
+
+    /* Typography */
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+        "Liberation Mono", monospace;
+
+    --size-display: 60px;
+    --weight-display: 600;
+    --leading-display: 1.05;
+    --tracking-display: -0.02em;
+
+    --size-heading: 40px;
+    --weight-heading: 600;
+    --leading-heading: 1.15;
+    --tracking-heading: -0.01em;
+
+    --size-heading-sm: 24px;
+    --weight-heading-sm: 600;
+    --leading-heading-sm: 1.33;
+
+    --size-body: 16px;
+    --weight-body: 400;
+    --leading-body: 1.6;
+
+    --size-body-sm: 14px;
+    --weight-body-sm: 400;
+    --leading-body-sm: 1.55;
+
+    --size-eyebrow: 12px;
+    --weight-eyebrow: 500;
+    --leading-eyebrow: 1.4;
+    --tracking-eyebrow: 0.08em;
+
+    --size-code: 14px;
+    --weight-code: 400;
+    --leading-code: 1.6;
+
+    /* Space */
+    --rhythm: 8px;
+    --gap-sm: 8px;
+    --gap-md: 16px;
+    --gap-lg: 24px;
+    --card-padding-wide: 32px;
+    --card-padding: 24px;
+    --measure: 1152px;
+    --gutter-wide: 32px;
+    --gutter: 24px;
+    --section-gap-wide: 96px;
+    --section-gap: 64px;
+
+    /* Radius */
+    --radius-panel: 12px;
+    --radius-code: 12px;
+    --radius-input: 8px;
+    --radius-action: 9999px;
+
+    /* Elevation — none on content panels; the single recipe is for the hero control */
+    --elevation-control: 0 1px 8px 30px rgba(0, 0, 0, 0.09);
+
+    /* Focus */
+    --focus-ring: 2px solid var(--accent);
+    --focus-offset: 2px;
+}
+
+/* The wide values of the same tokens: 96 px rhythm, 32 px gutter, 32 px cards. */
+@media (min-width: 768px) {
+    :root {
+        --card-padding: var(--card-padding-wide);
+        --gutter: var(--gutter-wide);
+        --section-gap: var(--section-gap-wide);
+    }
+}

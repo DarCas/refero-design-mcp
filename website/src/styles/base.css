@@ -1,0 +1,153 @@
+/*
+ * Dario Casertano <dario@casertano.name>
+ * Copyright (c) 2026 Casertano Dario – All rights reserved.
+ * Licensed under the MIT License.
+ */
+
+/*
+ * Base layer: reset, typography, focus rings, and the primitives every section
+ * reuses — the container, the section rhythm, the eyebrow, the terminal
+ * surface and the inverted band.
+ *
+ * The page must read correctly with this file disabled: the HTML is the
+ * document, the CSS is the argument.
+ */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    background-color: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: var(--size-body);
+    font-weight: var(--weight-body);
+    line-height: var(--leading-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+blockquote,
+dl,
+dd {
+    margin: 0;
+}
+
+strong,
+b {
+    font-weight: var(--weight-heading-sm);
+}
+
+code,
+kbd,
+samp,
+pre {
+    font-family: var(--font-mono);
+    font-size: var(--size-code);
+    line-height: var(--leading-code);
+}
+
+a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+}
+
+a:hover {
+    text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+}
+
+/*
+ * Type roles. `h1` carries a fluid provision — the token's 60 px is the wide
+ * value, the clamp only keeps the display headline whole at narrow widths. The
+ * responsive pass (Step 7) owns the final numbers.
+ */
+h1 {
+    font-size: clamp(2.5rem, 1.4rem + 4.4vw, var(--size-display));
+    font-weight: var(--weight-display);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
+}
+
+h2 {
+    font-size: var(--size-heading);
+    font-weight: var(--weight-heading);
+    line-height: var(--leading-heading);
+    letter-spacing: var(--tracking-heading);
+}
+
+h3 {
+    font-size: var(--size-heading-sm);
+    font-weight: var(--weight-heading-sm);
+    line-height: var(--leading-heading-sm);
+}
+
+/* The measure and its gutter. */
+.container {
+    width: 100%;
+    max-width: var(--measure);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+}
+
+/* The section rhythm; a hairline separates consecutive sections. */
+.section {
+    padding-block: var(--section-gap);
+}
+
+.section--ruled {
+    border-block-start: 1px solid var(--rule);
+}
+
+/* The section label: mono, tracked, one chromatic signal. */
+.eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--size-eyebrow);
+    font-weight: var(--weight-eyebrow);
+    line-height: var(--leading-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+/* Where the page shows commands, JSON and numbers. */
+.terminal {
+    background-color: var(--terminal-surface);
+    border: 1px solid var(--terminal-edge);
+    border-radius: var(--radius-panel);
+    color: var(--terminal-text);
+}
+
+/* The single inverted graphite band: the FAQ and the footer (Step 5). */
+.inverted {
+    background-color: var(--ink);
+    color: var(--terminal-text);
+}
+
+.inverted hr {
+    border: 0;
+    border-block-start: 1px solid var(--inverted-rule);
+}

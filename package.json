@@ -15,7 +15,7 @@
     "@modelcontextprotocol/sdk": "^1.6.1",
     "zod": "^4.6.5"
   },
-  "description": "MCP server for design research on styles.refero.design: search curated website styles, then extract colours, type scale, spacing and dos/donts as design.md",
+  "description": "MCP server and Agent Skill for evidence-based design research. Searches curated website styles on styles.refero.design and extracts real design systems — colours, type scale, spacing, surfaces, dos and donts — as design.md, so a coding agent implements from measured evidence instead of inventing a visual direction.",
   "devDependencies": {
     "@eslint/js": "^9.39.5",
     "@types/node": "^22.10.0",
@@ -39,10 +39,13 @@
   "homepage": "https://github.com/DarCas/refero-design-mcp#readme",
   "keywords": [
     "mcp",
+    "model-context-protocol",
     "design-system",
     "design-tokens",
     "design-research",
-    "design.md"
+    "design-md",
+    "agent-skill",
+    "design-inspiration"
   ],
   "license": "MIT",
   "name": "@darcas/refero-design-mcp",
