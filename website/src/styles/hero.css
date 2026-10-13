@@ -61,6 +61,10 @@
     margin: 0;
     margin-block-start: var(--gap-sm);
     overflow-x: auto;
+    /* Without this the install command's min-content width (336 px) is wider
+     * than a 375 px viewport, and the panel drags the whole page sideways. */
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
 .hero__actions {

@@ -1,0 +1,60 @@
+# InspirAI — AI-Powered Design Research for Coding Agents
+
+> `refero-design-mcp` is an MCP server for discovering, searching and extracting
+> design systems from the public pages of styles.refero.design.
+
+The underlying data belongs to Refero Design. This is an unofficial client; no
+affiliation or endorsement is implied.
+
+- Canonical URL: [https://inspirai.os.darcas.app/](https://inspirai.os.darcas.app/)
+- Package: `@darcas/refero-design-mcp` (MIT, requires Node ≥ 22.12)
+- Install: `npm install -g @darcas/refero-design-mcp`
+- Repository: [github.com/DarCas/refero-design-mcp](https://github.com/DarCas/refero-design-mcp)
+- Full context in one fetch: [llms-full.txt](https://inspirai.os.darcas.app/llms-full.txt)
+- Human-readable reference: [README](https://github.com/DarCas/refero-design-mcp#readme)
+
+## The honest summary
+
+- The JSON API is not used: `styles.refero.design/robots.txt` disallows `/api/`,
+  and the endpoint answers `403` to non-browser clients. The server reads only
+  what `Allow: /` permits — the published sitemap and the public style pages.
+- Coverage is reported, never implied: the index grows on demand over 1,342
+  published styles, so every search states its own coverage
+  (`refero_index_status` exists so the model checks before concluding absence).
+- Measured, not claimed: `refero_index_status` 27.9 ms → 0.15 ms (186×),
+  cached `expand` scan 49.0 ms → 0.10 ms (490×), first call 372 ms → 70 ms
+  (5.3×). Median of 15 runs, warm cache of 26 of 1,342 styles.
+
+## The six tools
+
+- `refero_index_status` — Published styles vs. locally indexed styles.
+  ([Tools](https://inspirai.os.darcas.app/#tools))
+- `refero_search_styles` — Free-text search over names, north stars, colours,
+  fonts, URLs. ([Tools](https://inspirai.os.darcas.app/#tools))
+- `refero_match_style` — Ranks styles against a prose design brief.
+  ([Tools](https://inspirai.os.darcas.app/#tools))
+- `refero_get_design_md` — Renders a style as `design.md`, by section
+  (`overview · colors · typography · type_scale · spacing · surfaces · imagery ·
+  principles · components · similar · custom`).
+  ([Tools](https://inspirai.os.darcas.app/#tools))
+- `refero_get_style` — Parsed design system plus measured tokens, as JSON.
+  ([Tools](https://inspirai.os.darcas.app/#tools))
+- `refero_list_style_ids` — Style UUIDs from the sitemap, without reading any
+  page. ([Tools](https://inspirai.os.darcas.app/#tools))
+
+## The skill
+
+`refero-design-research` teaches a coding agent to do evidence-based design
+research with this server before implementing UI. Install with
+`refero-design-skill install`. It contains no Refero data — only instructions,
+plus a tool reference generated from `src/`.
+([The skill](https://inspirai.os.darcas.app/#skill))
+
+## Page anchors
+
+- [Why it is built this way](https://inspirai.os.darcas.app/#why)
+- [How it works](https://inspirai.os.darcas.app/#how-it-works)
+- [Evidence: performance](https://inspirai.os.darcas.app/#performance)
+- [Configuration](https://inspirai.os.darcas.app/#configuration)
+- [Design notes](https://inspirai.os.darcas.app/#design-notes)
+- [FAQ](https://inspirai.os.darcas.app/#faq)

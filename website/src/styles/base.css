@@ -122,6 +122,45 @@ h3 {
     border-block-start: 1px solid var(--rule);
 }
 
+/*
+ * The reading column. The 1,152 px measure carries tables and figures; body
+ * copy wants a narrower column, so prose is capped in `ch` — Decided, on the
+ * same argument as the hero's 62 ch lede.
+ */
+.prose,
+.section-lede {
+    max-width: 68ch;
+}
+
+.prose {
+    margin-block-start: var(--gap-lg);
+}
+
+.section-lede {
+    margin-block-start: var(--gap-lg);
+    color: var(--ink-secondary);
+}
+
+.prose > * + * {
+    margin-block-start: var(--gap-md);
+}
+
+.prose > h3 {
+    margin-block-start: var(--gap-lg);
+}
+
+.prose > h3:first-child {
+    margin-block-start: 0;
+}
+
+/* An identifier in running text, marked without colour. */
+.prose code {
+    padding: 1px 4px;
+    border-radius: var(--radius-input);
+    background-color: var(--surface-sunken);
+    box-decoration-break: clone;
+}
+
 /* The section label: mono, tracked, one chromatic signal. */
 .eyebrow {
     font-family: var(--font-mono);
@@ -133,11 +172,158 @@ h3 {
     color: var(--accent);
 }
 
+/*
+ * Reference tables — the dense half of the page reads in them. A hairline under
+ * every row, the column heads in tracked mono, and the row head in mono so a
+ * tool name or a flag is never mistaken for prose.
+ *
+ * Tables are placed outside `.prose`, so the inline-code chip never lands in a
+ * cell: inside a table, code is marked by the mono face alone.
+ */
+.table {
+    width: 100%;
+    margin-block-start: var(--gap-lg);
+    border-collapse: collapse;
+    font-size: var(--size-body-sm);
+    line-height: var(--leading-body-sm);
+}
+
+.table th,
+.table td {
+    padding-block: var(--gap-md);
+    text-align: left;
+    vertical-align: top;
+    border-block-end: 1px solid var(--rule);
+}
+
+.table thead th {
+    padding-block-end: var(--gap-sm);
+    font-family: var(--font-mono);
+    font-size: var(--size-eyebrow);
+    font-weight: var(--weight-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    border-block-end: 1px solid var(--rule-strong);
+}
+
+.table tbody th {
+    font-family: var(--font-mono);
+    font-weight: var(--weight-body);
+    color: var(--ink);
+}
+
+/* The first column holds an identifier, so it never wraps where it can help it. */
+@media (min-width: 768px) {
+    .table th:first-child,
+    .table td:first-child {
+        width: 1%;
+        padding-inline-end: var(--gap-lg);
+        white-space: nowrap;
+    }
+}
+
+/*
+ * Narrow widths: the same rows, stacked. The column heads are kept in the
+ * accessibility tree and taken out of the visual one, so a screen reader still
+ * announces which column a cell belongs to.
+ */
+@media (max-width: 767px) {
+    .table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .table tr {
+        display: block;
+        border-collapse: collapse;
+    }
+
+    .table tbody tr {
+        padding-block-end: var(--gap-md);
+        border-block-end: 1px solid var(--rule);
+    }
+
+    .table th,
+    .table td {
+        display: block;
+        padding-block: 0;
+        border: 0;
+    }
+
+    .table tbody th {
+        margin-block-end: var(--gap-sm);
+    }
+
+    .table tbody tr + tr th {
+        margin-block-start: var(--gap-lg);
+    }
+}
+
 /* Where the page shows commands, JSON and numbers. */
 .terminal {
     background-color: var(--terminal-surface);
     border: 1px solid var(--terminal-edge);
     border-radius: var(--radius-panel);
+    color: var(--terminal-text);
+}
+
+/*
+ * A terminal figure: a labelled panel carrying a payload, a coverage block or a
+ * pipeline. The note at its foot is the caption, and it stays inside the figure
+ * so the caption belongs to the thing it describes.
+ */
+.figure {
+    margin-block-start: var(--gap-lg);
+    padding: var(--card-padding);
+}
+
+.figure__label {
+    font-family: var(--font-mono);
+    font-size: var(--size-eyebrow);
+    font-weight: var(--weight-eyebrow);
+    line-height: var(--leading-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--terminal-muted);
+}
+
+.figure__code {
+    margin: var(--gap-sm) 0 0;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.figure__note {
+    margin-block-start: var(--gap-md);
+    padding-block-start: var(--gap-md);
+    border-block-start: 1px solid var(--terminal-edge);
+    font-size: var(--size-body-sm);
+    color: var(--terminal-muted);
+}
+
+/*
+ * Inside a figure, code is a payload rather than an identifier in running text,
+ * so it loses the chip: a background here would paint the whole block. A list of
+ * identifiers (`.values`) loses it for the same reason — eleven chips is noise.
+ */
+.prose .figure code,
+.prose .values code {
+    padding: 0;
+    border-radius: 0;
+    background-color: transparent;
+}
+
+/* Inline code on a terminal surface: the panel's own text, never the accent. */
+.figure__note code,
+.figure__yield code {
     color: var(--terminal-text);
 }
 
@@ -150,4 +336,56 @@ h3 {
 .inverted hr {
     border: 0;
     border-block-start: 1px solid var(--inverted-rule);
+}
+
+/*
+ * On the band the accent is lightened: Kagi Violet at its light-canvas value
+ * measures 3.6:1 on `--ink`, under AA for body text, while the dark slot's
+ * `#a99bff` measures 7.5:1 on the same background. Every other token the band
+ * uses is the terminal palette — the band is a terminal surface, not a theme.
+ */
+.inverted a {
+    color: var(--dark-accent);
+}
+
+/* The eyebrow is accent-coloured text too, so it lightens with the links. */
+.inverted .eyebrow {
+    color: var(--dark-accent);
+}
+
+.inverted .disclosure {
+    border-block-start-color: var(--inverted-rule);
+}
+
+.inverted .disclosure__summary::marker {
+    color: var(--terminal-muted);
+}
+
+/*
+ * `<details>` — the environment table and the FAQ both hold content behind a
+ * summary the reader can read before opening it. The disclosure triangle is
+ * left as the browser draws it: it is the control, and the marker is the only
+ * part of the element that says which state it is in.
+ */
+.disclosure {
+    margin-block-start: var(--gap-lg);
+    border-block-start: 1px solid var(--rule);
+}
+
+.disclosure__summary {
+    padding-block: var(--gap-md);
+    font-weight: var(--weight-heading-sm);
+    cursor: pointer;
+}
+
+.disclosure__summary::marker {
+    color: var(--ink-muted);
+}
+
+.disclosure__body {
+    padding-block-end: var(--gap-lg);
+}
+
+.disclosure__body > * + * {
+    margin-block-start: var(--gap-lg);
 }

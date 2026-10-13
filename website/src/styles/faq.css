@@ -1,0 +1,53 @@
+/*
+ * Dario Casertano <dario@casertano.name>
+ * Copyright (c) 2026 Casertano Dario – All rights reserved.
+ * Licensed under the MIT License.
+ */
+
+/*
+ * The FAQ — the first half of the inverted graphite band.
+ *
+ * On the band the accent is lightened: Kagi Violet at its light-canvas value
+ * measures 3.6:1 on `--ink`, under AA for body text, while the dark slot's
+ * `#a99bff` measures 7.5:1 on the same background. The rest of the band keeps
+ * the terminal palette: `#fafafa` text, `#a1a1a1` secondary, `#2f2f31` rules.
+ */
+
+.faq {
+    padding-block: var(--section-gap);
+}
+
+.faq h2 {
+    margin-block-start: var(--gap-md);
+    max-width: 24ch;
+}
+
+.faq__list {
+    margin-block-start: var(--gap-lg);
+}
+
+.faq__item:last-child .disclosure__body {
+    padding-block-end: 0;
+}
+
+.faq__question {
+    color: var(--terminal-text);
+}
+
+.faq__answer {
+    max-width: 68ch;
+    color: var(--terminal-muted);
+}
+
+.faq__answer code {
+    color: var(--terminal-text);
+}
+
+.faq__disclaimer {
+    margin-block-start: var(--gap-lg);
+    padding-block-start: var(--gap-lg);
+    border-block-start: 1px solid var(--inverted-rule);
+    max-width: 68ch;
+    font-size: var(--size-body-sm);
+    color: var(--terminal-muted);
+}

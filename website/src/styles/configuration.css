@@ -1,0 +1,52 @@
+/*
+ * Dario Casertano <dario@casertano.name>
+ * Copyright (c) 2026 Casertano Dario – All rights reserved.
+ * Licensed under the MIT License.
+ */
+
+/*
+ * Configuration — the three ways to start the server, in the order a reader
+ * meets them, each with its snippet on a terminal surface.
+ */
+
+.config__steps {
+    margin: var(--gap-lg) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.config__step + .config__step {
+    margin-block-start: var(--gap-lg);
+}
+
+.config__step-title {
+    display: flex;
+    gap: var(--gap-md);
+    align-items: baseline;
+    font-size: var(--size-heading-sm);
+}
+
+/* The step number is text, not a generated marker: it is part of the document. */
+.config__step-index {
+    flex: 0 0 auto;
+    font-family: var(--font-mono);
+    font-size: var(--size-body-sm);
+    font-weight: var(--weight-body);
+    color: var(--ink-muted);
+}
+
+.config__step-body {
+    max-width: 68ch;
+    margin-block-start: var(--gap-sm);
+    color: var(--ink-secondary);
+}
+
+.config__step-body + .figure {
+    margin-block-start: var(--gap-md);
+}
+
+.config__transport {
+    max-width: 68ch;
+    margin-block-start: var(--gap-lg);
+    color: var(--ink-secondary);
+}

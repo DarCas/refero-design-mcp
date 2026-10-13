@@ -1,0 +1,50 @@
+/*
+ * Dario Casertano <dario@casertano.name>
+ * Copyright (c) 2026 Casertano Dario – All rights reserved.
+ * Licensed under the MIT License.
+ */
+
+/*
+ * How it works — the indexing pipeline as an ordered list on a terminal
+ * surface: three stages, hairline-separated.
+ *
+ * The stages are separated by a rule rather than a `↓` glyph, so the connector
+ * is decoration that never reaches the accessibility tree; the sequence is
+ * carried by the list itself and by the stage numbers.
+ */
+
+.pipeline {
+    margin: var(--gap-md) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pipeline__stage + .pipeline__stage {
+    margin-block-start: var(--gap-lg);
+    padding-block-start: var(--gap-lg);
+    border-block-start: 1px solid var(--terminal-edge);
+}
+
+.pipeline__step {
+    font-family: var(--font-mono);
+    font-size: var(--size-eyebrow);
+    line-height: var(--leading-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
+    color: var(--terminal-muted);
+}
+
+.pipeline__artifact {
+    margin-block-start: var(--gap-sm);
+    font-family: var(--font-mono);
+    font-size: var(--size-code);
+    line-height: var(--leading-code);
+    color: var(--terminal-text);
+    overflow-wrap: anywhere;
+}
+
+.pipeline__yield {
+    margin-block-start: var(--gap-sm);
+    font-size: var(--size-body-sm);
+    line-height: var(--leading-body-sm);
+    color: var(--terminal-muted);
+}

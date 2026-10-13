@@ -1,0 +1,49 @@
+/*
+ * Dario Casertano <dario@casertano.name>
+ * Copyright (c) 2026 Casertano Dario – All rights reserved.
+ * Licensed under the MIT License.
+ */
+
+/*
+ * The skill — what the skill decides on the left, the installer's flags on the
+ * right, once there is room for two columns of prose to sit beside a table.
+ *
+ * The breakpoint is 1024 px rather than 768: at 768 the right column would be
+ * about 336 px, and `--scope global|project` alone needs 190 of them before the
+ * effect text starts.
+ */
+
+.skill__columns {
+    display: grid;
+    gap: var(--gap-lg);
+    margin-block-start: var(--gap-lg);
+    align-items: start;
+}
+
+@media (min-width: 1024px) {
+    .skill__columns {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+        gap: var(--gap-lg) var(--card-padding-wide);
+    }
+}
+
+/* Both columns start on the same line, whatever their first child is. */
+.skill__column > :first-child {
+    margin-block-start: 0;
+}
+
+.skill__column > p {
+    max-width: 68ch;
+}
+
+.skill__column > p + p {
+    margin-block-start: var(--gap-md);
+}
+
+/* The flags table is the column's own head, so it does not sit inside prose. */
+.skill__note {
+    margin-block-start: var(--gap-md);
+    font-size: var(--size-body-sm);
+    line-height: var(--leading-body-sm);
+    color: var(--ink-secondary);
+}

@@ -1,0 +1,58 @@
+/*
+ * Dario Casertano <dario@casertano.name>
+ * Copyright (c) 2026 Casertano Dario – All rights reserved.
+ * Licensed under the MIT License.
+ */
+
+/*
+ * The colophon — the second half of the inverted band: one row of identity and
+ * links, then the affiliation statement. Both halves share the band, so the
+ * only separation the reader needs is a hairline.
+ */
+
+.colophon {
+    padding-block: var(--gap-lg) var(--gap-lg);
+    border-block-start: 1px solid var(--inverted-rule);
+}
+
+.colophon__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-md) var(--gap-lg);
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.colophon__identity {
+    font-size: var(--size-body-sm);
+    color: var(--terminal-muted);
+}
+
+.colophon__name {
+    font-family: var(--font-mono);
+    font-size: var(--size-code);
+    color: var(--terminal-text);
+    text-decoration: none;
+}
+
+.colophon__name:hover {
+    text-decoration: underline;
+}
+
+.colophon__identity code {
+    color: var(--terminal-text);
+}
+
+.colophon__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-md) var(--gap-lg);
+    font-size: var(--size-body-sm);
+}
+
+.colophon__disclaimer {
+    margin-block-start: var(--gap-md);
+    max-width: 68ch;
+    font-size: var(--size-body-sm);
+    color: var(--terminal-muted);
+}

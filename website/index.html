@@ -16,20 +16,114 @@
     <meta name="color-scheme" content="light">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 
-    <!-- Open Graph. `og:image` arrives with the poster in Step 6. -->
+    <!-- Open Graph. The poster is `public/og.png` (1200×630), approved by the
+         user before it was written; see PROGRESS.md Step 6. -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="InspirAI">
     <meta property="og:title" content="InspirAI — AI-Powered Design Research for Coding Agents">
     <meta property="og:description" content="refero-design-mcp is an MCP server for discovering, searching and extracting design systems from the public pages of styles.refero.design.">
     <meta property="og:url" content="https://inspirai.os.darcas.app/">
+    <meta property="og:image" content="https://inspirai.os.darcas.app/og.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="InspirAI — AI-Powered Design Research for Coding Agents. Install with npm install -g @darcas/refero-design-mcp.">
 
-    <!-- Twitter. The card becomes `summary_large_image` with the poster in Step 6. -->
-    <meta name="twitter:card" content="summary">
+    <!-- Twitter. Large-image card, using the same poster. -->
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="InspirAI — AI-Powered Design Research for Coding Agents">
     <meta name="twitter:description" content="refero-design-mcp is an MCP server for discovering, searching and extracting design systems from the public pages of styles.refero.design.">
+    <meta name="twitter:image" content="https://inspirai.os.darcas.app/og.png">
+    <meta name="twitter:image:alt" content="InspirAI — AI-Powered Design Research for Coding Agents. Install with npm install -g @darcas/refero-design-mcp.">
+
+    <!--
+        Structured data. The FAQPage answers are the FAQ section's own strings
+        (`src/site.ts` → `FAQ`), minus the code-span backticks — the same text a
+        reader sees once rendered — so an answer engine quotes the page.
+    -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "SoftwareApplication",
+                "name": "refero-design-mcp",
+                "applicationCategory": "DeveloperApplication",
+                "programmingLanguage": "TypeScript",
+                "license": "https://github.com/DarCas/refero-design-mcp/blob/main/LICENSE",
+                "codeRepository": "https://github.com/DarCas/refero-design-mcp",
+                "downloadUrl": "https://www.npmjs.com/package/@darcas/refero-design-mcp",
+                "description": "refero-design-mcp is an MCP server for discovering, searching and extracting design systems from the public pages of styles.refero.design."
+            },
+            {
+                "@type": "WebSite",
+                "name": "InspirAI",
+                "url": "https://inspirai.os.darcas.app/",
+                "description": "AI-Powered Design Research for Coding Agents"
+            },
+            {
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": "Is this affiliated with Refero Design?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "No. The underlying data belongs to Refero Design. This is an unofficial client; no affiliation or endorsement is implied. The Agent Skill carries the same statement, and no Refero data: only instructions, plus a tool reference generated from src/."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Does it write anything to my machine?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "The server writes one thing: its style cache, under REFERO_CACHE_DIR. Installing the package writes nothing outside node_modules — there is no postinstall. Running refero-design-skill install is the only other command that writes anything, and only after you run it."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Where does the cache live, and can I move it?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "By default ~/.cache/refero-design-mcp, or $XDG_CACHE_HOME/refero-design-mcp when that is set. REFERO_CACHE_DIR moves it; REFERO_CACHE_TTL_MS sets how long an entry stays fresh (604800000, seven days). Deleting the directory is safe — it costs a re-fetch, never a wrong answer."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Do I need an API key?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "No. There is no authentication anywhere in the package. It reads only the published sitemap and the public style pages — the paths robots.txt permits — so there is nothing to authenticate against."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Can it be used offline?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "For what it has already indexed, yes: the cache is on disk and the tools answer from it without reaching the network. A style that has not been indexed needs a fetch, and comes back as a typed error rather than a plausible-looking answer — refero_index_status says so plainly: \"The sitemap could not be read; the server may be offline.\""
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Why does the server seem to hang when I start it by hand?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "It is not hanging. Transport is stdio, so npm start waits for a client on stdin, which is correct behaviour. Diagnostics go to stderr only — stdout carries JSON-RPC frames and nothing else — so a quiet terminal is the healthy state."
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+    </script>
 </head>
 <body>
     <div id="root"></div>
+    <noscript>
+        This page is fully readable without JavaScript: every section is
+        prerendered into the HTML at build time. JavaScript only hydrates the
+        page for interactive disclosure widgets.
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>

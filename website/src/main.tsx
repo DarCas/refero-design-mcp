@@ -10,6 +10,13 @@ import {App} from './App'
 import './styles/tokens.css'
 import './styles/base.css'
 import './styles/hero.css'
+import './styles/how-it-works.css'
+import './styles/skill.css'
+import './styles/performance.css'
+import './styles/configuration.css'
+import './styles/design-notes.css'
+import './styles/faq.css'
+import './styles/footer.css'
 
 const container = document.getElementById('root')
 

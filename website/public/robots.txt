@@ -1,0 +1,53 @@
+# robots.txt for the InspirAI landing page
+# (https://inspirai.os.darcas.app/).
+#
+# This file only *permits* crawling. It cannot make a crawler cite the page,
+# and it is unrelated to how the Refero Design MCP itself crawls
+# styles.refero.design — that policy lives in the MCP server, not here.
+#
+# The page is a single static document: everything worth reading is in
+# dist/index.html at build time, so any crawler that reads this file can read
+# the whole page in one fetch.
+
+User-agent: *
+Allow: /
+
+# AI crawlers that honour robots.txt. Each is allowed because an assistant
+# that cannot fetch the page cannot quote it with attribution.
+User-agent: GPTBot            # OpenAI training crawl
+Allow: /
+
+User-agent: OAI-SearchBot     # OpenAI search retrieval
+Allow: /
+
+User-agent: ChatGPT-User      # ChatGPT user-initiated fetch
+Allow: /
+
+User-agent: Google-Extended   # Google AI / Gemini training and features
+Allow: /
+
+User-agent: PerplexityBot     # Perplexity answer retrieval
+Allow: /
+
+User-agent: ClaudeBot         # Anthropic training crawl
+Allow: /
+
+User-agent: Claude-User       # Claude user-initiated fetch
+Allow: /
+
+User-agent: Bingbot           # Microsoft Copilot retrieval, via Bing
+Allow: /
+
+User-agent: Applebot          # Apple search and intelligence features
+Allow: /
+
+User-agent: Applebot-Extended # Apple AI training and features
+Allow: /
+
+User-agent: meta-externalagent # Meta AI retrieval
+Allow: /
+
+User-agent: CCBot             # Common Crawl (training data other engines build on)
+Allow: /
+
+Sitemap: https://inspirai.os.darcas.app/sitemap.xml
