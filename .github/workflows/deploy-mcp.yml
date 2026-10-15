@@ -1,0 +1,51 @@
+name: Deploy server MCP
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Check secrets present (lengths only, no values)
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        run: |
+          set -e
+          fail=0
+          for v in VPS_HOST VPS_USER VPS_SSH_KEY VPS_PORT; do
+            len=$(eval "echo \${#$v}")
+            echo "$v length: $len"
+            if [ "$len" -eq 0 ]; then echo "::error::$v is empty or secret not found"; fail=1; fi
+          done
+          exit $fail
+
+      - name: Deploy over SSH
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        run: |
+          set -e
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          if ! ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null 2>&1; then
+            echo "::error::VPS_SSH_KEY is malformed (not a valid OpenSSH private key). Expect header -----BEGIN OPENSSH PRIVATE KEY-----, no passphrase, Unix line endings."
+            exit 1
+          fi
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -p "$VPS_PORT" -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" 'cd docker/app_darcas_os_inspirai_mcp && ./docker-compose.sh'
+          rm -f ~/.ssh/deploy_key
