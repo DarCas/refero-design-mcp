@@ -10,6 +10,7 @@ import {Faq} from './sections/Faq'
 import {Footer} from './sections/Footer'
 import {Hero} from './sections/Hero'
 import {HowItWorks} from './sections/HowItWorks'
+import {Nav} from './sections/Nav'
 import {Performance} from './sections/Performance'
 import {Skill} from './sections/Skill'
 import {Tools} from './sections/Tools'
@@ -35,6 +36,7 @@ export function App() {
             </main>
             <Faq />
             <Footer />
+            <Nav />
         </>
     )
 }

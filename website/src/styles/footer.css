@@ -28,6 +28,10 @@
     color: var(--terminal-muted);
 }
 
+.colophon__identity p + p {
+    margin-block-start: var(--gap-sm);
+}
+
 .colophon__name {
     font-family: var(--font-mono);
     font-size: var(--size-code);

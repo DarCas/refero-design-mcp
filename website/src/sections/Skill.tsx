@@ -4,24 +4,19 @@
  * Licensed under the MIT License.
  */
 
-import {renderInline} from '../inline'
 import {
-    SKILL_FLAGS,
+    REPOSITORY_URL,
     SKILL_INSTALL_COMMAND,
     SKILL_NAME,
-    SKILL_PANEL,
     SKILL_README_PATH,
     SKILL_README_URL,
     SKILLS_DIR,
 } from '../site'
 
 /**
- * The Agent Skill (README §The skill): the second deliverable, in two columns
- * — what the skill is and what it writes on the left, the installer's flags on
- * the right, under one terminal panel carrying the commands.
- *
- * The claim the section leads with is its boundary: the skill carries no Refero
- * data at all, only instructions plus a tool reference generated from `src/`.
+ * The Agent Skill (README §The skill): what it decides that the MCP cannot,
+ * the one install command, and what it writes. Flag-level reference lives in
+ * the README — the landing page sells the install, not the manual.
  */
 export function Skill() {
     return (
@@ -32,76 +27,30 @@ export function Skill() {
                 <p className="section-lede">
                     The package also ships an Agent Skill, <code>{SKILL_NAME}</code>, that teaches
                     a coding agent to do evidence-based design research with the Refero Design MCP
-                    before it implements substantial UI. It is a separate deliverable from the MCP
-                    itself and neither replaces the other: the MCP answers questions about styles,
+                    before it implements substantial UI. The MCP answers questions about styles,
                     the skill decides how to ask them.
                 </p>
                 <figure className="figure terminal">
-                    <figcaption className="figure__label">
-                        The installer, and the invocations it documents
-                    </figcaption>
+                    <figcaption className="figure__label">Install the skill</figcaption>
                     <pre className="figure__code">
-                        <code>{SKILL_PANEL}</code>
+                        <code>{SKILL_INSTALL_COMMAND}</code>
                     </pre>
                 </figure>
-                <div className="skill__columns">
-                    <div className="skill__column">
-                        <p>
-                            That is the whole command. It detects the agent clients you have,
-                            writes one shared copy under <code>{SKILLS_DIR}</code>, and links each
-                            client to it. When the MCP is not installed, the skill can set it up
-                            for you — after asking, and only for this package.
-                        </p>
-                        <p>
-                            Global scope links rather than copies, so the skill is one file on
-                            disk with several names pointing at it; project scope copies, so it can
-                            be committed. Links are created as <code>junction</code> on Windows,
-                            and a skills directory that is itself a symlink is written{' '}
-                            <em>through</em> rather than replaced.
-                        </p>
-                        <p>
-                            <strong>
-                                There is no <code>postinstall</code>.
-                            </strong>{' '}
-                            Nothing is written outside <code>node_modules</code> by installing the
-                            package — only an explicit <code>{SKILL_INSTALL_COMMAND}</code> writes
-                            anything, so upgrade the package and re-run it.
-                        </p>
-                        <p>
-                            The skill is not affiliated with Refero Design, and it contains no
-                            Refero data: only instructions, plus a tool reference generated
-                            from <code>src/</code>. See{' '}
-                            <a href={SKILL_README_URL}>
-                                <code>{SKILL_README_PATH}</code>
-                            </a>{' '}
-                            for what it does and who it is for.
-                        </p>
-                    </div>
-                    <div className="skill__column">
-                        <table className="table table--flags">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Flag</th>
-                                    <th scope="col">Effect</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {SKILL_FLAGS.map((entry) => (
-                                    <tr key={entry.flag}>
-                                        <th scope="row">{renderInline(entry.flag)}</th>
-                                        <td>{renderInline(entry.effect)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                        <p className="skill__note">
-                            Declare the scope <strong>once</strong>.{' '}
-                            <code>--global --project</code> and{' '}
-                            <code>--scope project --global</code> both fail: picking one silently
-                            would install to the other place while you believe you chose. A boolean
-                            flag given a value (<code>--force=1</code>) fails for the same reason.
-                        </p>
-                    </div>
+                <div className="prose">
+                    <p>
+                        That is the whole command. It detects the agent clients you have, writes
+                        one shared copy under <code>{SKILLS_DIR}</code>, and links each client to
+                        it. There is no <code>postinstall</code> — nothing is written outside{' '}
+                        <code>node_modules</code> until you run it explicitly.
+                    </p>
+                    <p>
+                        The skill contains no Refero data: only instructions, plus a tool reference
+                        generated from <code>src/</code>. All flags and scopes in{' '}
+                        <a href={SKILL_README_URL} target="_blank" rel="nofollow noopener">
+                            <code>{SKILL_README_PATH}</code>
+                        </a>{' '}
+                        — or <a href={`${REPOSITORY_URL}#the-skill`} target="_blank" rel="nofollow noopener">the README</a>.
+                    </p>
                 </div>
             </div>
         </section>

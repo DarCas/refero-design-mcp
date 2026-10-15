@@ -76,13 +76,6 @@
     margin-block-start: var(--gap-lg);
 }
 
-.hero__facts {
-    margin-block-start: var(--gap-lg);
-    font-family: var(--font-mono);
-    font-size: var(--size-code);
-    color: var(--ink-muted);
-}
-
 /* The primary action — graphite and white, never the accent as a fill. */
 .button {
     display: inline-flex;

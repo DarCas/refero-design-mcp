@@ -4,7 +4,7 @@
  * Licensed under the MIT License.
  */
 
-import {PUBLISHED_STYLES, STYLE_PAGE_SIZE} from '../site'
+import {PUBLISHED_STYLES_APPROX, STYLE_PAGE_SIZE} from '../site'
 
 /**
  * The indexing pipeline (README §"How styles are indexed"): the sitemap, the
@@ -19,7 +19,7 @@ export function HowItWorks() {
                 <p className="eyebrow">How it works</p>
                 <h2 id="how-title">A sitemap, a style page, a cached record.</h2>
                 <p className="section-lede">
-                    The Refero Design MCP turns one of the {PUBLISHED_STYLES} published styles into
+                    The Refero Design MCP turns one of the {PUBLISHED_STYLES_APPROX} published styles into
                     a validated record in three steps: the sitemap names the ids, the style page
                     carries the payload, and the parser keeps what it finds.
                 </p>
@@ -53,21 +53,17 @@ export function HowItWorks() {
                     </ol>
                     <p className="figure__note">
                         The index is lazy: the sitemap is read once, but a style page is{' '}
-                        {STYLE_PAGE_SIZE} and there are {PUBLISHED_STYLES} of them, so a search or
+                        {STYLE_PAGE_SIZE} and there are {PUBLISHED_STYLES_APPROX} of them, so a search or
                         a match only ever sees what it has indexed. That is why every result
                         states its coverage — a miss is not a verdict.
                     </p>
                 </figure>
                 <div className="prose">
                     <p>
-                        The style record is located by <code>styleId</code>. A page embeds a dozen
-                        or more related styles that share the same key names, so anchoring on the
-                        id is what prevents returning a neighbour&rsquo;s palette.
-                    </p>
-                    <p>
-                        The RSC format is internal to Next.js and may change. Every failure
-                        surfaces as a typed error rather than a partially-filled object that looks
-                        like a valid answer.
+                        Records are located by <code>styleId</code> — a page embeds related
+                        styles sharing key names, so id anchoring is what keeps a neighbour&rsquo;s
+                        palette out of your answer. Failures surface as typed errors, never as
+                        plausible-looking partial objects.
                     </p>
                 </div>
             </div>

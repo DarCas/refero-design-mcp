@@ -5,90 +5,14 @@
  */
 
 /*
- * Performance — the measured table and the chart beside it.
- *
- * The chart is CSS bars over a hairline track. Bars are graphite, like the
- * primary action: colour on this page is reserved for links and labels, and a
- * measurement is not decoration.
+ * Performance — the measured table. Numbers align on their digits where the
+ * table is still a table; stacking at narrow widths is the base layer's job.
  */
 
 @media (min-width: 768px) {
-    /* The numbers align on their digits where the table is still a table. */
     .table--metrics th:not(:first-child),
     .table--metrics td:not(:first-child) {
         text-align: right;
         font-variant-numeric: tabular-nums;
-    }
-}
-
-.performance__footnote {
-    font-size: var(--size-body-sm);
-    color: var(--ink-muted);
-}
-
-.chart {
-    margin-block-start: var(--gap-lg);
-}
-
-.chart__caption {
-    margin-block-end: var(--gap-md);
-    font-family: var(--font-mono);
-    font-size: var(--size-eyebrow);
-    font-weight: var(--weight-eyebrow);
-    line-height: var(--leading-eyebrow);
-    letter-spacing: var(--tracking-eyebrow);
-    text-transform: uppercase;
-    color: var(--ink-muted);
-}
-
-.chart__rows {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.chart__row {
-    display: grid;
-    grid-template-columns: 3.5rem minmax(0, 1fr);
-    gap: var(--gap-sm) var(--gap-md);
-    align-items: center;
-}
-
-.chart__row + .chart__row {
-    margin-block-start: var(--gap-md);
-}
-
-.chart__value {
-    font-family: var(--font-mono);
-    font-size: var(--size-code);
-    color: var(--ink);
-    text-align: right;
-}
-
-.chart__bar-track {
-    display: block;
-    height: 14px;
-    background-color: var(--rule);
-}
-
-.chart__bar {
-    display: block;
-    height: 100%;
-    background-color: var(--ink);
-}
-
-.chart__label {
-    grid-column: 2;
-    font-size: var(--size-body-sm);
-    color: var(--ink-secondary);
-}
-
-@media (min-width: 768px) {
-    .chart__row {
-        grid-template-columns: 3.5rem minmax(8rem, 1fr) 14rem;
-    }
-
-    .chart__label {
-        grid-column: 3;
     }
 }

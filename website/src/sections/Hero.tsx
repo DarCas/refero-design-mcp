@@ -6,17 +6,13 @@
 
 import {
     INSTALL_COMMAND,
-    LICENSE,
-    NODE_FLOOR,
     NPM_URL,
     PACKAGE_NAME,
-    PUBLISHED_STYLES,
+    PUBLISHED_STYLES_APPROX,
     REPOSITORY_URL,
     SITE_NAME,
     SITE_TAGLINE,
     STYLES_URL,
-    TEST_COUNT,
-    TOOL_COUNT,
 } from '../site'
 
 export function Hero() {
@@ -29,8 +25,8 @@ export function Hero() {
                 </h1>
                 <p className="hero__lede">
                     <code>{PACKAGE_NAME}</code> is an MCP server that discovers, searches and
-                    extracts design systems from the {PUBLISHED_STYLES} styles published on{' '}
-                    <a href={STYLES_URL}>styles.refero.design</a> — palette, type scale, spacing,
+                    extracts design systems from the {PUBLISHED_STYLES_APPROX} styles published on{' '}
+                    <a href={STYLES_URL} target="_blank" rel="nofollow noopener">styles.refero.design</a> — palette, type scale, spacing,
                     surfaces and do/don&rsquo;t guidance — so a coding agent implements from
                     measured evidence instead of an invented direction.
                 </p>
@@ -41,17 +37,13 @@ export function Hero() {
                     </pre>
                 </figure>
                 <div className="hero__actions">
-                    <a className="button" href={NPM_URL}>
+                    <a className="button" href={NPM_URL} target="_blank" rel="nofollow noopener">
                         Install from npm
                     </a>
-                    <a className="link" href={REPOSITORY_URL}>
+                    <a className="link" href={REPOSITORY_URL} target="_blank" rel="nofollow noopener">
                         Read the documentation
                     </a>
                 </div>
-                <p className="hero__facts">
-                    Node &ge; {NODE_FLOOR} &middot; {LICENSE} &middot; {TOOL_COUNT} MCP tools
-                    &middot; {TEST_COUNT} tests
-                </p>
             </div>
         </section>
     )

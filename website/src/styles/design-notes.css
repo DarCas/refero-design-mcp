@@ -5,31 +5,6 @@
  */
 
 /*
- * Design notes — five decisions as a definition list: the claim as the term,
- * the reason as its definition, a hairline between them.
+ * Design notes — a single paragraph. The five-note enumeration is reference
+ * material and lives in the README; the landing page keeps the claim.
  */
-
-.notes {
-    margin: 0;
-}
-
-.notes__entry {
-    padding-block: var(--gap-lg);
-    border-block-start: 1px solid var(--rule);
-}
-
-.notes__entry:first-child {
-    padding-block-start: 0;
-    border-block-start: 0;
-}
-
-.notes__term {
-    font-size: var(--size-heading-sm);
-    font-weight: var(--weight-heading-sm);
-    line-height: var(--leading-heading-sm);
-}
-
-.notes__definition {
-    margin-block-start: var(--gap-sm);
-    color: var(--ink-secondary);
-}

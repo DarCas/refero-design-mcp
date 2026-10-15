@@ -5,40 +5,57 @@
  */
 
 import {
-    DISCLAIMER,
-    LICENSE,
-    NODE_FLOOR,
+    LICENSE_URL,
     NPM_URL,
     PACKAGE_NAME,
+    PERSON_NAME,
+    PERSON_URL,
     REPOSITORY_URL,
-    SITE_NAME,
     SUPPORT_URL,
 } from '../site'
 
+const START_YEAR = 2026
+
+function getYearRange(): string {
+    const current = new Date().getFullYear()
+    return current > START_YEAR ? `${START_YEAR}-${current}` : `${START_YEAR}`
+}
+
 /**
- * The colophon: the license, where the code and the package are, the support
- * link, the Node floor, and the affiliation statement — the last one repeated
- * here on purpose, because the footer is the part of the page most likely to be
- * quoted out of context.
+ * The colophon: who built the page, what designed its layout, and under which
+ * license it ships — then the affiliation statement, repeated here on purpose
+ * because the footer is the part of the page most likely to be quoted out of
+ * context.
  */
 export function Footer() {
     return (
         <footer className="inverted colophon" id="colophon">
             <div className="container">
                 <div className="colophon__row">
-                    <p className="colophon__identity">
-                        <a className="colophon__name" href={REPOSITORY_URL}>
-                            {SITE_NAME}
-                        </a>{' '}
-                        ships <code>{PACKAGE_NAME}</code> — {LICENSE}, Node &ge; {NODE_FLOOR}.
-                    </p>
+                    <div className="colophon__identity">
+                        <p>
+                            Built by{' '}
+                            <a className="colophon__name" href={PERSON_URL} target="_blank" rel="nofollow noopener">
+                                {PERSON_NAME}
+                            </a>
+                        </p>
+                        <p>
+                            Layout designed with{' '}
+                            <a href={REPOSITORY_URL} target="_blank" rel="nofollow noopener">
+                                <code>{PACKAGE_NAME}</code>
+                            </a>
+                        </p>
+                        <p>
+                            &copy; {getYearRange()} {PERSON_NAME}.{' '}
+                            <a href={LICENSE_URL} target="_blank" rel="nofollow noopener">MIT licensed</a>.
+                        </p>
+                    </div>
                     <nav className="colophon__links" aria-label="Repository, package and support">
-                        <a href={REPOSITORY_URL}>Repository</a>
-                        <a href={NPM_URL}>npm</a>
-                        <a href={SUPPORT_URL}>Support the project</a>
+                        <a href={REPOSITORY_URL} target="_blank" rel="nofollow noopener">Repository</a>
+                        <a href={NPM_URL} target="_blank" rel="nofollow noopener">npm</a>
+                        <a href={SUPPORT_URL} target="_blank" rel="nofollow noopener">Support the project</a>
                     </nav>
                 </div>
-                <p className="colophon__disclaimer">{DISCLAIMER}</p>
             </div>
         </footer>
     )

@@ -18,7 +18,7 @@ affiliation or endorsement is implied.
 - The JSON API is not used: `styles.refero.design/robots.txt` disallows `/api/`,
   and the endpoint answers `403` to non-browser clients. The server reads only
   what `Allow: /` permits — the published sitemap and the public style pages.
-- Coverage is reported, never implied: the index grows on demand over 1,342
+- Coverage is reported, never implied: the index grows on demand over 1,300
   published styles, so every search states its own coverage
   (`refero_index_status` exists so the model checks before concluding absence).
 - Measured, not claimed: `refero_index_status` 27.9 ms → 0.15 ms (186×),

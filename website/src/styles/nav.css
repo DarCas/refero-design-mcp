@@ -1,0 +1,153 @@
+/*
+ * Dario Casertano <dario@casertano.name>
+ * Copyright (c) 2026 Casertano Dario – All rights reserved.
+ * Licensed under the MIT License.
+ */
+
+/*
+ * The section index — a fixed bottom-right disclosure, one component for
+ * mobile and desktop. Graphite filled, like the primary action; no shadow, no
+ * motion, so there is nothing for `prefers-reduced-motion` to remove.
+ *
+ * The panel is canvas with a hairline border: it must read over both the white
+ * document and the dark inverted band. `z-index: 50` is decided — the page has
+ * no stacking context besides this control.
+ */
+
+.nav-fab {
+    position: fixed;
+    right: max(var(--gutter), env(safe-area-inset-right));
+    bottom: max(var(--gutter), env(safe-area-inset-bottom));
+    z-index: 50;
+    user-select: none;
+}
+
+.nav-fab__button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    /*
+     * A visible ring on both grounds: the button sits on the white document
+     * and over the dark inverted band, where borderless graphite would vanish.
+     */
+    border: 1px solid var(--terminal-muted);
+    border-radius: var(--radius-action);
+    background-color: var(--ink);
+    cursor: pointer;
+    list-style: none;
+}
+
+.nav-fab__button::-webkit-details-marker {
+    display: none;
+}
+
+.nav-fab__button::marker {
+    content: '';
+}
+
+/* The three lines, drawn as spans so they can become an X in pure CSS. */
+.nav-fab__lines {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.nav-fab__lines span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    border-radius: 2px;
+    background-color: var(--accent-ink);
+    transition:
+        transform 160ms ease,
+        opacity 160ms ease;
+}
+
+.nav-fab[open] .nav-fab__lines span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.nav-fab[open] .nav-fab__lines span:nth-child(2) {
+    opacity: 0;
+}
+
+.nav-fab[open] .nav-fab__lines span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+.nav-fab__panel {
+    position: absolute;
+    right: 0;
+    /* Literal 56px = 48px button + 8px gap: a percentage here resolved to zero
+     * against the zero-height ::details-content box and parked the panel over
+     * the button instead of above it. */
+    bottom: 56px;
+    min-width: 12rem;
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--radius-panel);
+    background-color: var(--canvas);
+    padding-block: var(--gap-sm);
+    transform: translateY(8px);
+    transition: transform 160ms ease;
+}
+
+.nav-fab[open] .nav-fab__panel {
+    transform: translateY(0);
+}
+
+/*
+ * Slide from below on open, slide down on close — every toggle. Two rules do
+ * two jobs, because they must: `::details-content` is the box the browser
+ * hides when closed, so it owns opacity; the inner panel owns the slide via
+ * its own `transform`. (Putting `translate` on the pseudo would promote it to
+ * containing block, and the panel would anchor to its zero-height box
+ * underneath the button instead of above it.)
+ */
+.nav-fab::details-content {
+    opacity: 0;
+    transition:
+        opacity 160ms ease,
+        display 160ms allow-discrete,
+        content-visibility 160ms allow-discrete;
+}
+
+.nav-fab[open]::details-content {
+    opacity: 1;
+}
+
+@starting-style {
+    .nav-fab[open]::details-content {
+        opacity: 0;
+    }
+}
+
+.nav-fab__panel ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.nav-fab__panel a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--gap-md);
+    font-size: var(--size-body-sm);
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.nav-fab__panel a:hover {
+    background-color: var(--accent-soft);
+    text-decoration: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nav-fab__lines span,
+    .nav-fab::details-content,
+    .nav-fab__panel {
+        transition: none;
+    }
+}

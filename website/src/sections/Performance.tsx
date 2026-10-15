@@ -5,29 +5,14 @@
  */
 
 import {renderInline} from '../inline'
-import {
-    INDEXED_SAMPLE,
-    PERFORMANCE,
-    PERFORMANCE_CHART,
-    PERFORMANCE_CONDITIONS,
-    PUBLISHED_STYLES,
-} from '../site'
+import {INDEXED_SAMPLE, PERFORMANCE, PUBLISHED_STYLES, REPOSITORY_URL} from '../site'
 
 /**
- * The measured half of the page (README §Performance): the operations table, the
- * same four rows as a chart, and the two notes that keep the numbers honest.
- *
- * The chart is CSS bars, not an image: a bar is a div whose width is derived
- * from the ratio, and the number and its label are text in the document, so a
- * crawler, a screen reader and a reader without CSS all get the measurement
- * rather than a picture of one.
+ * The measured half of the page (README §Performance): the operations table
+ * and the one honest footnote. The log-scale chart duplicated the table, so it
+ * is gone — numbers as text are what a crawler, a screen reader and a reader
+ * without CSS all get.
  */
-
-/** Bar length on a log₁₀ scale, so 1.2× is visible next to 490×. */
-function barWidth(ratio: number): string {
-    return `${(Math.log10(ratio) / Math.log10(490)) * 100}%`
-}
-
 export function Performance() {
     return (
         <section
@@ -64,44 +49,14 @@ export function Performance() {
                         ))}
                     </tbody>
                 </table>
-                <figure className="chart">
-                    <figcaption className="chart__caption">
-                        Speed-up on a log scale — bar length is log₁₀ of the
-                        value, so the 1.2× row is still a row.
-                    </figcaption>
-                    <ul className="chart__rows">
-                        {PERFORMANCE_CHART.map((row) => {
-                            const width = barWidth(row.ratio)
-
-                            return (
-                                <li className="chart__row" key={row.label}>
-                                    <span className="chart__value">{row.value}</span>
-                                    <span className="chart__bar-track" aria-hidden="true">
-                                        <span className="chart__bar" style={{width}} />
-                                    </span>
-                                    <span className="chart__label">{row.label}</span>
-                                </li>
-                            )
-                        })}
-                    </ul>
-                </figure>
                 <div className="prose">
                     <p>
-                        <strong>The ranking barely moved, and that is deliberate.</strong> It was
-                        measured before being optimised: at ~13 ms across the whole catalogue it was
-                        never the bottleneck, so the scorer was left alone rather than tuned against
-                        a
-                        guess.
+                        <strong>The ranking barely moved, and that is deliberate.</strong> At ~13
+                        ms across the whole catalogue it was never the bottleneck, so the scorer
+                        was left alone. Median of 15 runs, warm cache — your numbers will differ;
+                        the ratio is the point.{' '}
+                        <a href={`${REPOSITORY_URL}#performance`} target="_blank" rel="nofollow noopener">Full conditions</a>.
                     </p>
-                    <p>
-                        <strong>
-                            The first call in a process is dominated by one sitemap request
-                        </strong>
-                        , not by the disk. That fetch is what makes coverage honest, and it is why
-                        it
-                        happens once rather than per call.
-                    </p>
-                    <p className="performance__footnote">{PERFORMANCE_CONDITIONS}</p>
                 </div>
             </div>
         </section>
