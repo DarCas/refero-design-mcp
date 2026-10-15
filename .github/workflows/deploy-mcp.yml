@@ -14,8 +14,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
-
       - name: Check secrets present (lengths only, no values)
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}

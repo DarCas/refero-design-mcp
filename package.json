@@ -55,12 +55,13 @@
     "url": "git+https://github.com/DarCas/refero-design-mcp.git"
   },
   "scripts": {
-    "build": "npm run clean && tsc -p tsconfig.build.json && node scripts/postbuild.mjs",
+    "build": "tsc -p tsconfig.build.json && node scripts/postbuild.mjs",
     "clean": "rm -rf dist",
-    "deploy": "npm run verify && npm publish --access public --provenance",
+    "deploy": "npm run clean && npm run verify && npm run publish",
     "dev": "tsx watch src/cli.ts",
     "dev:http": "tsx watch src/cli-http.ts",
     "lint": "eslint src test",
+    "publish": "npm publish --access public",
     "start": "node dist/cli.js",
     "start:http": "node dist/cli-http.js",
     "test": "vitest run",
