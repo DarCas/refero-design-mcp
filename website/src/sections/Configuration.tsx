@@ -4,10 +4,10 @@
  * Licensed under the MIT License.
  */
 
-import {CONFIG_GLOBAL, CONFIG_NPX, NODE_FLOOR, REPOSITORY_URL} from '../site'
+import { CONFIG_GLOBAL, CONFIG_NPX, CONFIG_REMOTE, NODE_FLOOR, REPOSITORY_URL } from '../site'
 
 /**
- * Configuration (README §Installation, §Configuration): the two ways a reader
+ * Configuration (README §Installation, §Configuration): the three ways a reader
  * actually starts the server. The contributor trap and the ten-variable table
  * are reference material — they live in the README, linked, not rendered.
  */
@@ -20,7 +20,7 @@ export function Configuration() {
         >
             <div className="container">
                 <p className="eyebrow">Configuration</p>
-                <h2 id="configuration-title">Two ways to start it.</h2>
+                <h2 id="configuration-title">Three ways to start it.</h2>
                 <p className="section-lede">
                     Point a client at the package and it runs on demand — no install step.
                     Requires Node &ge; {NODE_FLOOR}; npm reports <code>EBADENGINE</code> on an older
@@ -62,13 +62,45 @@ export function Configuration() {
                             </pre>
                         </figure>
                     </li>
+                    <li className="config__step">
+                        <h3 className="config__step-title">
+                            <span className="config__step-index">03</span>
+                            Use the hosted remote
+                        </h3>
+                        <p className="config__step-body">
+                            No process to spawn and nothing to install — point the client at the
+                            hosted endpoint. Stateless, like running it yourself; the server
+                            carries no authentication.
+                        </p>
+                        <figure className="figure terminal">
+                            <figcaption className="figure__label">mcp.json</figcaption>
+                            <pre className="figure__code">
+                                <code>{CONFIG_REMOTE}</code>
+                            </pre>
+                        </figure>
+                    </li>
                 </ol>
                 <p className="config__transport">
-                    Transport is stdio; diagnostics go to stderr only. Every setting is optional —
+                    Transport is stdio by default; a second binary serves the same tools over
+                    Streamable HTTP for clients that cannot spawn a process — see{' '}
+                    <a
+                        href={`${REPOSITORY_URL}#remote-streamable-http`}
+                        target="_blank"
+                        rel="nofollow noopener"
+                    >
+                        Remote in the README
+                    </a>.
+                    Diagnostics go to stderr only. Every setting is optional —
                     the three worth touching first are <code>REFERO_MAX_FETCHES</code>,{' '}
                     <code>REFERO_CONCURRENCY</code> and <code>REFERO_TIMEOUT_MS</code>. Full
                     variable table in{' '}
-                    <a href={`${REPOSITORY_URL}#environment-variables`} target="_blank" rel="nofollow noopener">the README</a>.
+                    <a
+                        href={`${REPOSITORY_URL}#environment-variables`}
+                        target="_blank"
+                        rel="nofollow noopener"
+                    >
+                        the README
+                    </a>.
                 </p>
             </div>
         </section>

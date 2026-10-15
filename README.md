@@ -1,6 +1,6 @@
-# refero-design-mcp 
-[![M8ven Score](https://m8ven.ai/badge/mcp/darcas-refero-design-mcp-1077wk)](https://m8ven.ai/mcp/darcas-refero-design-mcp-1077wk?s=readme)
+# @darcas/refero-design-mcp 
 [![Buy me a coffee](https://img.shields.io/badge/buy_me_a_coffee-%E2%9D%A4%EF%B8%8F-FEEBE7?&labelColor=FF0000)](https://www.paypal.com/donate/?hosted_button_id=YZQDE3TEYDBWA)
+[![M8ven Score](https://m8ven.ai/badge/mcp/darcas-refero-design-mcp-1077wk)](https://m8ven.ai/mcp/darcas-refero-design-mcp-1077wk?s=readme)
 
 > The underlying data belongs to Refero Design. This is an unofficial client; no
 affiliation or endorsement is implied.
@@ -249,9 +249,56 @@ No other user hits this: it needs a local `package.json` with this exact name.
 The package is scoped but the binary is not, so the command is
 `refero-design-mcp` with no `@darcas/` prefix.
 
-Transport is stdio. Diagnostics go to stderr only — stdout carries JSON-RPC
+The default transport is stdio; see [Remote (Streamable HTTP)](#remote-streamable-http)
+to serve it over the network. Diagnostics go to stderr only — stdout carries JSON-RPC
 frames and nothing else. A server started by hand (`npm start`) will appear to
 hang: it is waiting for a client on stdin, which is correct behaviour.
+
+### Remote (Streamable HTTP)
+
+A second binary, `refero-design-mcp-http`, serves the same tools over
+[Streamable HTTP](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http)
+at `POST /mcp`, so a client that cannot spawn a process can reach it by URL.
+
+```
+npx -y -p @darcas/refero-design-mcp refero-design-mcp-http
+# listening on http://127.0.0.1:3000/mcp
+```
+
+Or with Docker, which keeps the cache in a named volume:
+
+```
+docker compose up -d --build
+```
+
+Client configuration:
+
+```
+{
+  "mcp": {
+    "servers": {
+      "refero": { "type": "remote", "url": "https://mcp.example.com/mcp" }
+    }
+  }
+}
+```
+
+- **Stateless.** Each request is self-contained, so there is no session to lose
+  on restart. `GET` and `DELETE` on `/mcp` answer `405`.
+- **No authentication.** Anyone who can reach the port can use the server, and
+  every call can make it fetch from `styles.refero.design`. Keep it on a private
+  network, or put a reverse proxy with HTTPS (and whatever access control you
+  need) in front. The compose file publishes on loopback for that reason.
+- **`GET /health`** returns `{"status":"ok","version":"…"}` for probes.
+  `HEAD` answers the same headers with no body.
+- **Proxy timeouts.** A call that expands the index can take a few seconds; do
+  not set the proxy's read timeout below ~60 s, and disable response buffering
+  (`proxy_buffering off` in nginx) so streamed responses arrive as they are sent.
+
+Two settings are specific to this binary and are read by `src/cli-http.ts`, not
+`src/config.ts`: `REFERO_HTTP_HOST` (interface to bind, `127.0.0.1` by default,
+`0.0.0.0` in the image) and `REFERO_HTTP_PORT` (default `3000`, falls back to
+`PORT`). Every variable in the next section applies here too.
 
 ### Environment variables
 

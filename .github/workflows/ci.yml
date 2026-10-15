@@ -33,6 +33,9 @@ jobs:
       - name: Smoke test the built server
         run: node scripts/smoke.mjs
 
+      - name: Smoke test the built HTTP server
+        run: node scripts/smoke-http.mjs
+
       - name: Upload build output
         uses: actions/upload-artifact@v4
         with:
@@ -71,3 +74,6 @@ jobs:
 
       - name: Smoke test on the minimum supported Node
         run: node scripts/smoke.mjs
+
+      - name: Smoke test the HTTP server on the minimum supported Node
+        run: node scripts/smoke-http.mjs

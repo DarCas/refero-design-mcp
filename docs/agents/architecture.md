@@ -2,15 +2,18 @@
 
 ## What the thing is
 
-An MCP server, stdio transport, single npm package, no framework beyond
-`@modelcontextprotocol/sdk` and `zod`. It reads the public pages of
-`styles.refero.design`, extracts a design system from each page, and answers
-tool calls about the catalogue.
+An MCP server, stdio transport by default with a Streamable HTTP entry point,
+single npm package, no framework beyond `@modelcontextprotocol/sdk` and `zod`.
+It reads the public pages of `styles.refero.design`, extracts a design system
+from each page, and answers tool calls about the catalogue.
 
 Two runtime shapes, deliberately separate:
 
 - `src/cli.ts` owns the process's stdio. stdio can only be taken once, so the
   CLI is the only place that constructs `StdioServerTransport`.
+- `src/cli-http.ts` serves the same tools over Streamable HTTP at `POST /mcp`,
+  stateless per request against the shared module-level `store` — so the
+  in-memory index survives across requests while no session does.
 - `src/server/index.ts` exports `createServer()`, a pure function. That is what
   lets `test/e2e.test.ts` drive a real server in-process over
   `InMemoryTransport` instead of spawning a process and piping JSON-RPC.
@@ -67,6 +70,7 @@ silent `0.0.0` would otherwise survive.
 | Module | Responsibility |
 | --- | --- |
 | `src/cli.ts` | Process entry: `createServer()`, stdio transport, SIGINT/SIGTERM shutdown |
+| `src/cli-http.ts` | Process entry: `createServer()` per POST over Streamable HTTP, `GET /health`, SIGINT/SIGTERM shutdown |
 | `src/version.ts` | `VERSION`, resolved from the manifest. Import-free leaf |
 | `src/config.ts` | Every `REFERO_*` setting, env-overridable, validated at startup |
 | `src/http.ts` | The only network egress: fetch, conditional GET, retry/backoff, `Retry-After`, stderr `log()` |

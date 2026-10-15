@@ -101,6 +101,7 @@ suites cast fixture JSON. Do not extend that exemption.
 | A new tool or resource | `npx vitest run test/e2e.test.ts` plus a name in its assertion list |
 | Cache or fetch behaviour | `npx vitest run test/e2e.test.ts`; a warm local cache can mask changes |
 | Packaging, `bin`, or the Node floor | `npm run build && node scripts/smoke.mjs` |
+| HTTP entry point | `node scripts/smoke-http.mjs` — same handshake over `POST /mcp` plus `/health` |
 
 ## The smoke test
 

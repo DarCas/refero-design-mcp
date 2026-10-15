@@ -1,0 +1,48 @@
+name: inspirai
+
+services:
+  mcp:
+    image: ghcr.io/darcas/inspirai-mcp:latest
+    container_name: inspirai-mcp
+    restart: unless-stopped
+
+    environment:
+      REFERO_VERBOSE: "false"
+      # Transport (read by src/cli-http.ts, not src/config.ts):
+      #REFERO_HTTP_HOST: "0.0.0.0" # interface to bind (image default; loopback upstream)
+      #REFERO_HTTP_PORT: "3000" # falls back to PORT, then 3000
+      # Cache:
+      #REFERO_CACHE_DIR: "/data/cache" # on-disk cache (image default; the volume below persists it)
+      #REFERO_CACHE_TTL_MS: "604800000" # freshness window, 7 days
+      # Fetch behaviour:
+      #REFERO_CONCURRENCY: "4" # max simultaneous requests
+      #REFERO_MAX_FETCHES: "25" # max page fetches per tool call
+      #REFERO_MAX_RESPONSE_CHARS: "40000" # response budget
+      #REFERO_TIMEOUT_MS: "30000" # per-request timeout, ms
+      # Origin (only point elsewhere for fixtures/tests):
+      #REFERO_SITE_URL: "https://styles.refero.design"
+      #REFERO_STYLES_SITEMAP: "https://styles.refero.design/sitemaps/styles.xml"
+      # Identity and diagnostics:
+      #REFERO_USER_AGENT: "refero-design-mcp/<version> (+https://github.com/DarCas/refero-design-mcp; MCP client)"
+      #REFERO_VERBOSE: "false" # diagnostics to stderr
+
+    ports:
+      # Loopback only: the endpoint has no authentication. Put a reverse
+      # proxy with HTTPS in front of it. Use "3000:3000" only on a private network.
+      - "127.0.0.1:3000:3000"
+
+    volumes:
+      - refero-cache:/data/cache
+
+    cpus: 0.5
+    mem_limit: 512M
+    mem_reservation: 256M
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10M"
+        max-file: "3"
+
+volumes:
+  refero-cache:

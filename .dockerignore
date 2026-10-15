@@ -1,0 +1,11 @@
+node_modules
+dist
+coverage
+.git
+.github
+.opencode
+.env
+.env.*
+docs
+test
+*.tgz

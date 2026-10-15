@@ -110,7 +110,9 @@ e2e suite asserts both the listing and the URI shape.
 
 ## Transport rules
 
-- stdio. stdout carries JSON-RPC frames and nothing else.
+- stdio is the default; `src/cli-http.ts` serves the same tools over
+  Streamable HTTP (`POST /mcp`, stateless, `GET`/`DELETE` answer `405`).
+  stdout carries JSON-RPC frames and nothing else.
 - Diagnostics go to stderr through `log()` in `src/http.ts`, which is **silent
   unless `REFERO_VERBOSE` is set**. A quiet server is normal, not broken.
 - `npm start` on a bare terminal appears to hang: it is waiting for a client on

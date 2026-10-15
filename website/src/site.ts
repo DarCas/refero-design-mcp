@@ -128,7 +128,7 @@ export const PERFORMANCE = [
     {operation: 'First call in a process', before: '372 ms', after: '70 ms', speedUp: '5.3×'},
 ]
 
-/** README §Configuration — the two ways a client can start the server. */
+/** README §Configuration — the three ways a client can start the server. */
 export const CONFIG_NPX = `{
   "mcp": {
     "servers": {
@@ -141,6 +141,18 @@ export const CONFIG_NPX = `{
 
 export const CONFIG_GLOBAL = `"refero-design-mcp": {
   "command": ["refero-design-mcp"]
+}`
+
+/**
+ * The hosted remote. Same shape as the README snippet, except the server key
+ * is `refero-design-mcp` everywhere on this page — the README's `"refero"`
+ * is the only place that shortens it, per explicit user decision.
+ */
+export const REMOTE_URL = 'https://mcp.inspirai.os.darcas.app/mcp'
+
+export const CONFIG_REMOTE = `"refero-design-mcp": {
+  "type": "remote",
+  "url": "${REMOTE_URL}"
 }`
 
 /** README §intro — the affiliation statement, reproduced word for word. */

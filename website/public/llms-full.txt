@@ -187,7 +187,10 @@ and the binary separately:
 ```
 
 Requires Node ≥ 22.12; npm reports `EBADENGINE` on an older runtime. Transport
-is stdio; diagnostics go to stderr only. The package is scoped but the binary
+is stdio by default; a second binary, `refero-design-mcp-http`, serves the same
+tools over Streamable HTTP (`POST /mcp`, stateless) for clients that cannot
+spawn a process — see README "Remote (Streamable HTTP)". Diagnostics go to
+stderr only. The package is scoped but the binary
 is not: the command is `refero-design-mcp` with no `@darcas/` prefix.
 
 | Variable | Default | Purpose |
