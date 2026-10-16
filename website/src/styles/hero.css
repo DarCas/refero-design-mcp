@@ -168,7 +168,7 @@
     left: -22vw;
     background-image: radial-gradient(
         circle at 50% 50%,
-        color-mix(in srgb, var(--accent) 34%, transparent),
+        color-mix(in srgb, var(--signal) var(--wash-a), transparent),
         transparent 70%
     );
     animation: hero-drift-a 54s var(--ease-in-out) infinite;
@@ -181,7 +181,7 @@
     right: -26vw;
     background-image: radial-gradient(
         circle at 50% 50%,
-        color-mix(in srgb, var(--accent) 26%, transparent),
+        color-mix(in srgb, var(--signal) var(--wash-b), transparent),
         transparent 72%
     );
     animation: hero-drift-b 66s var(--ease-in-out) infinite;
@@ -232,7 +232,7 @@
     background-image: linear-gradient(
         to bottom,
         transparent,
-        color-mix(in srgb, var(--accent) 85%, transparent),
+        color-mix(in srgb, var(--signal) 85%, transparent),
         transparent
     );
     animation: hero-sweep 1.35s var(--ease-out) 200ms 1 both;

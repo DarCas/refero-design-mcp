@@ -12,8 +12,29 @@
     <title>InspirAI — AI-Powered Design Research for Coding Agents</title>
     <meta name="description" content="refero-design-mcp is an MCP server for discovering, searching and extracting design systems from the public pages of styles.refero.design.">
     <link rel="canonical" href="https://inspirai.os.darcas.app/">
-    <meta name="theme-color" content="#ffffff">
-    <meta name="color-scheme" content="light">
+    <meta id="theme-color-light" name="theme-color" content="#ffffff">
+    <meta id="theme-color-dark" name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
+    <script>
+        /* The theme is applied before the first paint, so the page never flashes
+           the wrong one. This cannot import `src/theme.ts` — it has to run before
+           the bundle is fetched — so the storage key and the two meta ids are
+           written here as well. Keep the two copies in step. DESIGN.md §10. */
+        try {
+            var stored = window.localStorage.getItem('inspirai.theme')
+
+            if (stored === 'dark' || stored === 'light') {
+                document.documentElement.dataset.theme = stored
+                document.getElementById('theme-color-light').media =
+                    stored === 'light' ? 'all' : 'not all'
+                document.getElementById('theme-color-dark').media =
+                    stored === 'dark' ? 'all' : 'not all'
+            }
+        } catch (error) {
+            /* Storage can be unavailable in private modes. The operating
+               system's preference stands and nothing is remembered. */
+        }
+    </script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 
     <!-- Open Graph. The poster is `public/og.png` (1200×630), approved by the

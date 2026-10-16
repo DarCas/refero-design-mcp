@@ -18,6 +18,7 @@ import './styles/faq.css'
 import './styles/footer.css'
 import './styles/nav.css'
 import './styles/ambient.css'
+import './styles/theme-toggle.css'
 
 const container = document.getElementById('root')
 

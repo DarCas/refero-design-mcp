@@ -1,0 +1,115 @@
+/*
+ * Dario Casertano <dario@casertano.name>
+ * Copyright (c) 2026 Casertano Dario – All rights reserved.
+ * Licensed under the MIT License.
+ */
+
+/*
+ * The theme control — `docs/website/DESIGN.md` §10.
+ *
+ * It sits in the top-right corner, the section index's counterpart, but it is
+ * not a second pill: the reader asked for the two icons to leave the circle and
+ * read as objects. So there is no backdrop, no ring and no fill — only a
+ * gradient that makes each glyph catch light, and a shadow that lifts it off the
+ * paper. The button keeps its 48 px target; the drawing is 24 px.
+ */
+
+.theme-toggle {
+    position: fixed;
+    /* The box is 48 px but the glyph inside it is 24 px, so the box sits 12 px
+     * closer to the corner: what lines up with the section index's inset is the
+     * icon the reader sees, not the invisible target around it. */
+    top: max(calc(var(--gutter) - 12px), env(safe-area-inset-top));
+    right: max(calc(var(--gutter) - 12px), env(safe-area-inset-right));
+    z-index: 50;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border: 0;
+    background-color: transparent;
+    color: var(--accent);
+    cursor: pointer;
+}
+
+/* Both icons are in the document and stacked in the same grid cell: the visible
+ * one is chosen by `opacity`, so nothing reflows when the theme changes and the
+ * prerendered HTML is already correct. */
+.theme-toggle__icon {
+    grid-area: 1 / 1;
+    display: grid;
+    place-items: center;
+    transition: opacity 160ms ease;
+}
+
+.theme-toggle__icon svg {
+    display: block;
+    /* Two shadows, not one: a hard contact shadow under the edge and a soft cast
+     * shadow below it are what make a flat glyph read as solid. Alpha-only
+     * black, so no new colour enters the palette. */
+    filter:
+        drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45))
+        drop-shadow(0 3px 6px rgba(0, 0, 0, 0.22));
+}
+
+.theme-toggle__icon--sun {
+    opacity: 0;
+}
+
+/* The gradients are the other half of the illusion: the sun is lit from the
+ * upper left like a sphere, and the crescent carries the same falloff along its
+ * arc. Both are built from the palette — the sun's yellow and the accent — so
+ * the control adds exactly one colour and reuses the other. */
+.theme-toggle__sun-top {
+    stop-color: color-mix(in srgb, var(--sun) 56%, #ffffff);
+}
+
+.theme-toggle__sun-bottom {
+    stop-color: var(--sun);
+}
+
+.theme-toggle__moon-top {
+    stop-color: color-mix(in srgb, var(--accent) 68%, #ffffff);
+}
+
+.theme-toggle__moon-bottom {
+    stop-color: var(--accent);
+}
+
+/* The icon names the TARGET theme, not the current one: a moon offers dark, a
+ * sun offers light. These are the same two conditions the palette switches on,
+ * which is why the control is right before JavaScript arrives. The sun is the
+ * only place the page shows yellow, and it only ever shows it on the dark
+ * surface. */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) .theme-toggle {
+        color: var(--sun);
+    }
+
+    :root:not([data-theme='light']) .theme-toggle__icon--sun {
+        opacity: 1;
+    }
+
+    :root:not([data-theme='light']) .theme-toggle__icon--moon {
+        opacity: 0;
+    }
+}
+
+:root[data-theme='dark'] .theme-toggle {
+    color: var(--sun);
+}
+
+:root[data-theme='dark'] .theme-toggle__icon--sun {
+    opacity: 1;
+}
+
+:root[data-theme='dark'] .theme-toggle__icon--moon {
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .theme-toggle__icon {
+        transition: none;
+    }
+}

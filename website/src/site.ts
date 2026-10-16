@@ -36,6 +36,9 @@ export const NODE_FLOOR = '22.12'
 /** README §License. */
 export const LICENSE = 'MIT'
 
+/** The theme control's accessible name — `docs/website/DESIGN.md` §10. */
+export const THEME_LABEL = 'Dark theme'
+
 /** README §Tools — the six tools, each declaring all four behavioural hints. */
 export const TOOL_COUNT = 6
 

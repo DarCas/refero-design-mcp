@@ -359,9 +359,11 @@ h3 {
     color: var(--terminal-text);
 }
 
-/* The single inverted graphite band: the FAQ and the footer (Step 5). */
+/* The single inverted band: the FAQ and the footer (Step 5). Light, it is the
+ * graphite fill; in the dark theme it becomes a raised surface rather than a
+ * white band, which is why the fill is its own token — DESIGN.md §10. */
 .inverted {
-    background-color: var(--ink);
+    background-color: var(--band-surface);
     color: var(--terminal-text);
 }
 

@@ -13,6 +13,7 @@ import {HowItWorks} from './sections/HowItWorks'
 import {Nav} from './sections/Nav'
 import {Performance} from './sections/Performance'
 import {Skill} from './sections/Skill'
+import {ThemeToggle} from './sections/ThemeToggle'
 import {Tools} from './sections/Tools'
 import {Why} from './sections/Why'
 
@@ -45,6 +46,7 @@ export function App() {
             <Faq />
             <Footer />
             <Nav />
+            <ThemeToggle />
         </>
     )
 }

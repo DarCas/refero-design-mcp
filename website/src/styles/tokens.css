@@ -25,6 +25,27 @@
     --accent-soft: #efecff;
     --accent-ink: #ffffff;
 
+    /* The inverted band's own surface. Light, it is the graphite fill it has
+     * always had; in the dark theme it becomes a raised surface instead of a
+     * white band, which is why it is a token and not `var(--ink)` at the point
+     * of use — Decided, DESIGN.md §10. */
+    --band-surface: var(--ink);
+
+    /* The ambient signal. A literal, never an alias of `--accent`: a custom
+     * property's `var()` is substituted where it is declared, so an alias would
+     * follow the accent to the lighter `#a99bff` in dark and brighten the glow.
+     * `--wash-a` and `--wash-b` are the two halos' strengths, retuned per theme
+     * because the same violet reads very differently over white and over black
+     * — Decided, DESIGN.md §10. */
+    --signal: #6c5edc;
+    --wash-a: 34%;
+    --wash-b: 26%;
+
+    /* The theme control's sun — Decided, DESIGN.md §10. The reader asked for a
+     * yellow sun beside an accent-coloured moon, so the control carries a second
+     * chromatic signal of its own; the crescent keeps the page's accent. */
+    --sun: #f0b32e;
+
     /* Colour — terminal and inverted surfaces */
     --terminal-canvas: #0a0a0a;
     --terminal-surface: #171717;
@@ -110,6 +131,66 @@
     /* Focus */
     --focus-ring: 2px solid var(--accent);
     --focus-offset: 2px;
+}
+
+/*
+ * Colour — the dark theme.
+ *
+ * One remap, written twice: once for the operating system's preference and once
+ * for the button in the corner. CSS cannot OR a media query with a selector, so
+ * the two copies are kept in step by being literally the same declarations —
+ * change one, change both. They share a specificity of (0, 2, 0), and the media
+ * query cannot match while `data-theme="light"` is set, so they never disagree.
+ * Decided — DESIGN.md §10.
+ *
+ * Only colours change, and every value is one of the two palettes already in
+ * this file: the layout does not move between themes.
+ */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+        color-scheme: dark;
+        --canvas: var(--dark-canvas);
+        --surface-sunken: var(--dark-surface-sunken);
+        --ink: var(--dark-ink);
+        --ink-secondary: var(--dark-ink-secondary);
+        /* Lifted from the slot's `#737373`, which measures 4.17:1 on `#0a0a0a`
+         * and fails AA for the small text that uses it — table headers, the
+         * disclosure marker, the scrollbar on hover. `#8a8a8a` measures 5.74:1. */
+        --ink-muted: #8a8a8a;
+        --rule: var(--dark-rule);
+        --rule-strong: var(--dark-rule-strong);
+        --accent: var(--dark-accent);
+        --accent-soft: color-mix(in srgb, var(--dark-accent) 16%, transparent);
+        --accent-ink: var(--dark-canvas);
+        --band-surface: var(--dark-surface-sunken);
+        /* The signal keeps its violet; only its strength changes, because 34 %
+         * of a violet over white is a lavender and over black is a shadow. */
+        --wash-a: 64%;
+        --wash-b: 50%;
+    }
+}
+
+:root[data-theme='dark'] {
+    color-scheme: dark;
+    --canvas: var(--dark-canvas);
+    --surface-sunken: var(--dark-surface-sunken);
+    --ink: var(--dark-ink);
+    --ink-secondary: var(--dark-ink-secondary);
+    --ink-muted: #8a8a8a;
+    --rule: var(--dark-rule);
+    --rule-strong: var(--dark-rule-strong);
+    --accent: var(--dark-accent);
+    --accent-soft: color-mix(in srgb, var(--dark-accent) 16%, transparent);
+    --accent-ink: var(--dark-canvas);
+    --band-surface: var(--dark-surface-sunken);
+    --wash-a: 64%;
+    --wash-b: 50%;
+}
+
+/* Light by request, against a dark system. Nothing is remapped: this rule only
+ * stops the browser from drawing dark form controls on the white canvas. */
+:root[data-theme='light'] {
+    color-scheme: light;
 }
 
 /* The wide values of the same tokens: 96 px rhythm, 32 px gutter, 32 px cards. */
