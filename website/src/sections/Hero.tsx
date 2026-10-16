@@ -18,6 +18,13 @@ import {
 export function Hero() {
     return (
         <section className="hero" id="top" aria-labelledby="hero-title">
+            <div className="hero__glow" aria-hidden="true">
+                <div className="hero__wash">
+                    <span className="hero__blob hero__blob--a" />
+                    <span className="hero__blob hero__blob--b" />
+                </div>
+                <span className="hero__scan" />
+            </div>
             <div className="container">
                 <p className="hero__brand">{SITE_NAME}</p>
                 <h1 className="hero__title" id="hero-title">

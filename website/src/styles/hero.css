@@ -13,8 +13,18 @@
  */
 
 .hero {
+    position: relative;
+    /* The violet signal below bleeds past the section on purpose; clipping keeps
+     * it inside the hero instead of over the section underneath. */
+    overflow: clip;
     padding-block: var(--section-gap);
     text-align: center;
+}
+
+/* The hero's own content paints above its signal. */
+.hero .container {
+    position: relative;
+    z-index: 1;
 }
 
 .hero__brand {
@@ -98,4 +108,163 @@
 
 .link {
     font-size: var(--size-body-sm);
+}
+
+/*
+ * Ambient signal — `docs/website/DESIGN.md` §8. Two violet halos drifting
+ * behind the hero and one measurement sweep across it. Both live inside the
+ * hero, so they scroll away before the first table; both move on the compositor
+ * only — `transform` and `opacity`, never layout. Frozen under
+ * `prefers-reduced-motion`.
+ */
+
+.hero__glow {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* The wash keeps full strength in the margins and a whisper under the reading
+ * column. On white the accent eyebrow and the lede's link measure 4.9:1, so the
+ * middle of the hero never receives more than 10 % of the signal. The stops are
+ * percentages, not pixels: `calc(50% - 620px)` goes negative on a phone and the
+ * mask collapses, taking the whole wash with it. */
+.hero__wash {
+    position: absolute;
+    inset: 0;
+    -webkit-mask-image: linear-gradient(
+        to right,
+        #000 0,
+        rgba(0, 0, 0, 0.1) 26%,
+        rgba(0, 0, 0, 0.1) 74%,
+        #000 100%
+    );
+    mask-image: linear-gradient(
+        to right,
+        #000 0,
+        rgba(0, 0, 0, 0.1) 26%,
+        rgba(0, 0, 0, 0.1) 74%,
+        #000 100%
+    );
+}
+
+.hero__blob {
+    position: absolute;
+    border-radius: 50%;
+}
+
+/* `--accent` at 34 %, fading out before the edge. No blur filter: the gradient
+ * falloff is already soft, and a filter would only add a paint pass.
+ *
+ * Size and position are in `vw`, not `rem`: a 56 rem circle is wider than a
+ * phone, so it would flood the hero's centred text with violet instead of
+ * retreating to the corners. In `vw` the wash keeps the same proportions at
+ * every width. */
+.hero__blob--a {
+    width: 62vw;
+    height: 62vw;
+    top: -27vw;
+    left: -22vw;
+    background-image: radial-gradient(
+        circle at 50% 50%,
+        color-mix(in srgb, var(--accent) 34%, transparent),
+        transparent 70%
+    );
+    animation: hero-drift-a 54s var(--ease-in-out) infinite;
+}
+
+.hero__blob--b {
+    width: 71vw;
+    height: 71vw;
+    top: -31vw;
+    right: -26vw;
+    background-image: radial-gradient(
+        circle at 50% 50%,
+        color-mix(in srgb, var(--accent) 26%, transparent),
+        transparent 72%
+    );
+    animation: hero-drift-b 66s var(--ease-in-out) infinite;
+}
+
+/* 0 % and 100 % are identical, so the loop has no visible seam. Both halos drift
+ * outward and down, never toward the middle, so the reading column's share of
+ * the signal can only shrink as the animation runs. */
+@keyframes hero-drift-a {
+    0% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate3d(-3vw, 7vw, 0) scale(1.14);
+    }
+
+    100% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+}
+
+@keyframes hero-drift-b {
+    0% {
+        transform: translate3d(0, 0, 0) scale(1.06);
+    }
+
+    50% {
+        transform: translate3d(3vw, 9vw, 0) scale(1);
+    }
+
+    100% {
+        transform: translate3d(0, 0, 0) scale(1.06);
+    }
+}
+
+/* One pass, once per load: the page is describing a measurement, so the hero
+ * shows one. It never loops. */
+.hero__scan {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -2px;
+    width: 1px;
+    z-index: 2;
+    opacity: 0;
+    pointer-events: none;
+    background-image: linear-gradient(
+        to bottom,
+        transparent,
+        color-mix(in srgb, var(--accent) 85%, transparent),
+        transparent
+    );
+    animation: hero-sweep 1.35s var(--ease-out) 200ms 1 both;
+}
+
+@keyframes hero-sweep {
+    0% {
+        transform: translateX(0);
+        opacity: 0;
+    }
+
+    12% {
+        opacity: 1;
+    }
+
+    88% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateX(calc(100vw + 4px));
+        opacity: 0;
+    }
+}
+
+/* Fewer and gentler, not zero: the lattice stays, the movement stops. */
+@media (prefers-reduced-motion: reduce) {
+    .hero__blob {
+        animation: none;
+    }
+
+    .hero__scan {
+        animation: none;
+    }
 }

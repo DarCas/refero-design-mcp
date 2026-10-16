@@ -20,10 +20,18 @@ import {Why} from './sections/Why'
  * The page, in the order of `docs/website/PLAN.md` §4: the hero, the two
  * argument sections, the two deliverables, the dense reference half, then the
  * FAQ and the colophon on the inverted band that closes it.
+ *
+ * The ambient lattice (`docs/website/DESIGN.md` §8) is the first child, so it
+ * sits behind every section without a rule on each one.
  */
 export function App() {
     return (
         <>
+            <div className="ambient" aria-hidden="true">
+                <div className="ambient__margin">
+                    <div className="ambient__grid" />
+                </div>
+            </div>
             <main id="main">
                 <Hero />
                 <Why />

@@ -102,6 +102,11 @@
     /* Elevation — none on content panels; the single recipe is for the hero control */
     --elevation-control: 0 1px 8px 30px rgba(0, 0, 0, 0.09);
 
+    /* Motion — Decided, DESIGN.md §8. The two curves the hero signal runs on:
+     * the built-in keywords are too weak at the durations and distances here. */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
     /* Focus */
     --focus-ring: 2px solid var(--accent);
     --focus-offset: 2px;

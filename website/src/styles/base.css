@@ -22,6 +22,38 @@
 html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    scrollbar-color: var(--rule-strong) transparent;
+    scrollbar-width: thin;
+}
+
+/* Chromium and Safari ignore the two standard properties and want
+ * `::-webkit-scrollbar`; Firefox uses them. The thumb keeps the page's hairline
+ * ink until it is touched, so the bar reads as part of the sheet, not as chrome. */
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--rule-strong);
+    border: 3px solid var(--canvas);
+    border-radius: var(--radius-action);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--ink-muted);
+}
+
+/* The FAB's anchors jump instantly without this; the gate keeps the page still
+ * for anyone who asked for less motion. */
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth;
+    }
 }
 
 body {

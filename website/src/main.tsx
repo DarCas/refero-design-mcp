@@ -17,6 +17,7 @@ import './styles/design-notes.css'
 import './styles/faq.css'
 import './styles/footer.css'
 import './styles/nav.css'
+import './styles/ambient.css'
 
 const container = document.getElementById('root')
 

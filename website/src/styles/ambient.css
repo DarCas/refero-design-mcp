@@ -1,0 +1,92 @@
+/*
+ * Dario Casertano <dario@casertano.name>
+ * Copyright (c) 2026 Casertano Dario – All rights reserved.
+ * Licensed under the MIT License.
+ */
+
+/*
+ * Ambient background — `docs/website/DESIGN.md` §8.
+ *
+ * The light canvas carries one static object: a technical lattice at the page's
+ * own rhythm (8 px) with a major line every eighth (64 px), drawn in the two
+ * hairline greys the page already uses. It is heaviest in the gutters and over
+ * the first screen, and spreads out under the reading column, so it frames the
+ * document instead of sitting behind the prose. Nothing here animates; the only
+ * motion on the page is the hero signal, in `hero.css`.
+ *
+ * The layer is fixed, `aria-hidden` and inert. The graphited band and the
+ * terminal panels are opaque, so they cover it without a rule of their own.
+ */
+
+.ambient {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* Horizontally: solid in the gutters, a third of that under the measurement
+ * column, so the lattice never competes with the text it sits behind. */
+.ambient__margin {
+    position: absolute;
+    inset: 0;
+    -webkit-mask-image: linear-gradient(
+        to right,
+        #000 0,
+        rgba(0, 0, 0, 0.75) calc(50% - 640px),
+        rgba(0, 0, 0, 0.3) calc(50% - 380px),
+        rgba(0, 0, 0, 0.3) calc(50% + 380px),
+        rgba(0, 0, 0, 0.75) calc(50% + 640px),
+        #000 100%
+    );
+    mask-image: linear-gradient(
+        to right,
+        #000 0,
+        rgba(0, 0, 0, 0.75) calc(50% - 640px),
+        rgba(0, 0, 0, 0.3) calc(50% - 380px),
+        rgba(0, 0, 0, 0.3) calc(50% + 380px),
+        rgba(0, 0, 0, 0.75) calc(50% + 640px),
+        #000 100%
+    );
+}
+
+/* Vertically: full strength at the top, easing to a fifth by the bottom of the
+ * viewport, so the page quietens as it is read. */
+.ambient__grid {
+    position: absolute;
+    inset: 0;
+    opacity: 0.68;
+    background-image:
+        linear-gradient(to right, var(--rule) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--rule) 1px, transparent 1px),
+        linear-gradient(to right, var(--rule-strong) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--rule-strong) 1px, transparent 1px);
+    background-size:
+        var(--rhythm) var(--rhythm),
+        var(--rhythm) var(--rhythm),
+        calc(var(--rhythm) * 8) calc(var(--rhythm) * 8),
+        calc(var(--rhythm) * 8) calc(var(--rhythm) * 8);
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        #000 0,
+        rgba(0, 0, 0, 0.92) 40vh,
+        rgba(0, 0, 0, 0.45) 90vh,
+        rgba(0, 0, 0, 0.22) 100%
+    );
+    mask-image: linear-gradient(
+        to bottom,
+        #000 0,
+        rgba(0, 0, 0, 0.92) 40vh,
+        rgba(0, 0, 0, 0.45) 90vh,
+        rgba(0, 0, 0, 0.22) 100%
+    );
+}
+
+/* The ambient is painted at a negative depth, so `#root` has to be the
+ * stacking context that contains it — otherwise the layer would land on top of
+ * the text it is meant to sit behind. */
+#root {
+    position: relative;
+    z-index: 0;
+}
